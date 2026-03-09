@@ -1,0 +1,383 @@
+.page { display: flex; flex-direction: column; gap: 16px; }
+
+/* ── Stat cards with radial glow on hover ────────────────────────── */
+.stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+
+.statCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  transition:
+    border-color 0.3s,
+    box-shadow 0.3s,
+    transform 0.25s var(--ease-out);
+}
+/* The radial glow blob — follows CSS vars set by JS via onMouseMove */
+.statCard::before {
+  content: '';
+  position: absolute;
+  width: 180px; height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(155,114,248,0.22) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  left: var(--mx, 50%);
+  top:  var(--my, 50%);
+  opacity: 0;
+  transition: opacity 0.35s, left 0.06s, top 0.06s;
+  pointer-events: none;
+  z-index: 0;
+}
+.statCard:hover::before { opacity: 1; }
+.statCard:hover {
+  border-color: var(--border-2);
+  box-shadow: var(--shadow-md), 0 0 0 1px rgba(155,114,248,0.1);
+  transform: translateY(-3px);
+}
+/* Make sure content is above glow */
+.statCard > * { position: relative; z-index: 1; }
+
+.statIco {
+  width: 36px; height: 36px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 12px;
+  transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+}
+.statCard:hover .statIco { transform: scale(1.12) rotate(-4deg); }
+
+.statVal  { font-size: 24px; font-weight: 700; letter-spacing: -0.04em; line-height: 1; color: var(--text); }
+.statLbl  { font-size: 11.5px; color: var(--text-2); margin-top: 4px; }
+.statTrend { font-size: 11px; margin-top: 8px; font-weight: 500; }
+.up    { color: var(--green); }
+.muted { color: var(--text-3); }
+
+/* ── Main grid ───────────────────────────────────────────────────── */
+.grid  { display: grid; grid-template-columns: 1fr 300px; gap: 14px; }
+.right { display: flex; flex-direction: column; gap: 12px; }
+
+/* ── Task list rows with subtle hover glow ───────────────────────── */
+.taskList { display: flex; flex-direction: column; gap: 7px; }
+.taskRow {
+  display: flex; align-items: center; gap: 11px;
+  padding: 10px 12px; border-radius: var(--radius-md);
+  background: var(--surface-2); border: 1px solid var(--border);
+  cursor: pointer; position: relative; overflow: hidden;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+}
+.taskRow::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(155,114,248,0.0) 0%, rgba(155,114,248,0.07) 100%);
+  opacity: 0; transition: opacity 0.25s;
+  pointer-events: none;
+}
+.taskRow:hover { border-color: rgba(155,114,248,0.3); transform: translateX(3px); }
+.taskRow:hover::after { opacity: 1; }
+.taskRow.done { opacity: 0.5; }
+
+.check {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 1.5px solid var(--surface-3);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.2s; color: #fff;
+}
+.checked { background: var(--green); border-color: var(--green); }
+.taskName { font-size: 13px; flex: 1; color: var(--text); }
+.taskRow.done .taskName { text-decoration: line-through; color: var(--text-2); }
+.badge { font-size: 12px; opacity: 0.65; transition: opacity 0.15s; }
+.taskRow:hover .badge { opacity: 1; }
+.tag {
+  font-size: 10px; font-weight: 500;
+  padding: 2px 7px; border-radius: 5px;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.cat-activity { background: var(--orange-soft); color: var(--orange); }
+.cat-study    { background: var(--blue-soft);   color: var(--blue);   }
+.cat-leisure  { background: var(--green-soft);  color: var(--green);  }
+
+/* ── Empty state ─────────────────────────────────────────────────── */
+.empty {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 28px 16px; gap: 10px; text-align: center;
+}
+.emptyIco {
+  width: 48px; height: 48px; border-radius: 14px;
+  background: var(--surface-2); color: var(--text-3);
+  display: flex; align-items: center; justify-content: center;
+}
+.empty p { font-size: 13px; color: var(--text-2); }
+
+/* ── Streak ──────────────────────────────────────────────────────── */
+.streakBadge {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 13px; border-radius: var(--radius-md);
+  background: var(--orange-soft);
+  border: 1px solid color-mix(in srgb, var(--orange) 22%, transparent);
+  margin-bottom: 14px;
+  transition: box-shadow 0.25s;
+}
+.streakBadge:hover { box-shadow: 0 0 0 1px color-mix(in srgb, var(--orange) 35%, transparent); }
+.streakIco {
+  width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0;
+  background: color-mix(in srgb, var(--orange) 18%, transparent);
+  color: var(--orange);
+  display: flex; align-items: center; justify-content: center;
+}
+.streakVal { font-size: 20px; font-weight: 700; letter-spacing: -0.04em; color: var(--text); }
+.streakSub { font-size: 11px; color: var(--text-2); }
+
+.weekLabel { font-size: 11px; font-weight: 500; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+.weekBars  { display: flex; gap: 6px; align-items: flex-end; height: 56px; }
+.barCol    { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+.bar {
+  width: 100%; border-radius: 3px 3px 0 0;
+  background: var(--surface-3);
+  transition: height 0.7s var(--ease-out), background 0.2s;
+  min-height: 4%;
+}
+.bar:hover    { background: color-mix(in srgb, var(--accent) 40%, var(--surface-3)); }
+.barHas       { background: color-mix(in srgb, var(--accent) 25%, var(--surface-3)); }
+.barToday     { background: var(--accent); }
+.barDay       { font-size: 9.5px; color: var(--text-3); }
+.barDayToday  { color: var(--accent); font-weight: 600; }
+
+/* ── Ring ────────────────────────────────────────────────────────── */
+.ringWrap {
+  position: relative; width: 108px; height: 108px;
+  margin: 10px auto;
+}
+.ringLabel {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.ringPct { font-size: 22px; font-weight: 700; letter-spacing: -0.04em; color: var(--text); }
+.ringDay { font-size: 11px; color: var(--text-3); }
+.ringDesc { font-size: 12px; color: var(--text-2); margin-top: 8px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .stats { grid-template-columns: repeat(2,1fr); }
+  .grid  { grid-template-columns: 1fr; }
+  .right { flex-direction: row; flex-wrap: wrap; }
+  .right > * { flex: 1; min-width: 240px; }
+}
+@media (max-width: 540px) {
+  .stats { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .statVal { font-size: 20px; }
+  .grid  { grid-template-columns: 1fr; }
+  .right { flex-direction: column; }
+}
+
+/* ── XP bar ── */
+.xpBar { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 18px; }
+.xpTop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.xpLevel { font-size: 13px; font-weight: 700; color: var(--accent); }
+.xpVal   { font-size: 12px; color: var(--text-3); }
+.xpTrack { height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.xpFill  { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #6d28d9, #a855f7); transition: width 1s var(--ease-out); }
+.xpBot   { font-size: 11px; color: var(--text-3); margin-top: 6px; }
+
+/* ── Priority dot ── */
+.priorityDot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── Task info ── */
+.taskInfo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.taskProject { font-size: 10.5px; color: var(--accent); font-weight: 500; }
+.taskMethod  { font-size: 10px; color: var(--text-3); }
+.taskMeta    { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+
+/* ── Quantity progress ── */
+.qProgress { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
+.qTrack    { flex: 1; height: 4px; border-radius: 99px; background: var(--surface-3); overflow: hidden; min-width: 40px; }
+.qFill     { height: 100%; border-radius: 99px; background: var(--accent); transition: width .6s var(--ease-out); }
+.qLabel    { font-size: 10px; color: var(--text-3); white-space: nowrap; }
+.qBtn {
+  padding: 1px 6px; border-radius: 4px; border: 1px solid var(--accent);
+  background: var(--accent-soft); color: var(--accent); font-size: 10px;
+  cursor: pointer; font-family: inherit;
+  transition: background .15s; flex-shrink: 0;
+}
+.qBtn:hover { background: var(--accent); color: #fff; }
+
+/* ── Focus button ── */
+.focusBtn {
+  width: 22px; height: 22px; border-radius: 5px;
+  border: none; background: var(--accent-soft); color: var(--accent);
+  font-size: 9px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, transform .1s; flex-shrink: 0;
+}
+.focusBtn:hover { background: var(--accent); color: #fff; transform: scale(1.1); }
+
+/* ── Streak ── */
+.streakBadge { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.streakIco {
+  width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+  background: var(--orange-soft); color: var(--orange);
+  display: flex; align-items: center; justify-content: center;
+}
+.streakVal { font-size: 18px; font-weight: 700; color: var(--text); }
+.streakSub { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+.freezeBtn {
+  margin-left: auto; width: 32px; height: 32px; border-radius: 8px; font-size: 16px;
+  border: 1.5px solid rgba(99,200,255,0.3); background: rgba(99,200,255,0.06);
+  cursor: pointer; transition: background .18s, border-color .18s, transform .15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.freezeBtn:hover { background: rgba(99,200,255,0.15); border-color: rgba(99,200,255,0.5); transform: scale(1.1); }
+.freezeDisabled { opacity: 0.35; cursor: not-allowed; }
+.freezeDisabled:hover { transform: none; }
+
+.weekLabel { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; margin-bottom: 8px; }
+.weekBars  { display: flex; align-items: flex-end; gap: 5px; height: 68px; }
+.barCol    { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+.bar       { width: 100%; border-radius: 4px 4px 0 0; background: var(--accent); opacity: 0.25; transition: height .8s var(--ease-out); }
+.barToday  { opacity: 1; }
+.barHas    { opacity: 0.6; }
+.barDay    { font-size: 9.5px; color: var(--text-3); font-weight: 500; }
+.barDayToday { color: var(--accent); }
+
+/* ── Progress ring ── */
+.ringWrap { position: relative; display: inline-flex; align-items: center; justify-content: center; margin: 8px 0; }
+.ringLabel { position: absolute; display: flex; flex-direction: column; align-items: center; }
+.ringPct  { font-size: 22px; font-weight: 700; letter-spacing: -0.04em; color: var(--text); }
+.ringDay  { font-size: 11px; color: var(--text-3); }
+.ringDesc { font-size: 12px; color: var(--text-2); margin-top: 4px; }
+
+/* ── Empty ── */
+.empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 32px 20px; }
+.emptyIco { width: 52px; height: 52px; border-radius: 16px; background: var(--surface-2); color: var(--text-3); display: flex; align-items: center; justify-content: center; }
+
+/* ── Stat sub ── */
+.statSub { font-size: 10px; color: var(--text-3); margin-top: 4px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .stats { grid-template-columns: repeat(2,1fr); }
+  .grid  { grid-template-columns: 1fr; }
+  .right { flex-direction: row; flex-wrap: wrap; }
+  .right > * { flex: 1; min-width: 220px; }
+}
+@media (max-width: 540px) {
+  .stats { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .statCard { padding: 12px; }
+  .statVal  { font-size: 20px; }
+  .grid  { grid-template-columns: 1fr; }
+  .right { flex-direction: column; }
+  .taskRow { gap: 7px; padding: 8px 10px; }
+  .taskName { font-size: 12px; }
+}
+
+/* ── Notification banner ── */
+.notifBanner {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px; border-radius: var(--radius-lg);
+  background: rgba(109,40,217,.08); border: 1px solid rgba(109,40,217,.2);
+  font-size: 13px; color: var(--text-2);
+}
+.notifBanner span { flex: 1; }
+.notifBanner button {
+  padding: 5px 14px; border-radius: 8px; border: none;
+  background: var(--accent); color: #fff; font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: filter .15s; white-space: nowrap;
+}
+.notifBanner button:hover { filter: brightness(1.1); }
+.notifDismiss { background: transparent !important; color: var(--text-3) !important; padding: 5px !important; }
+
+/* ── XP Bar upgrade ── */
+.xpLevelBadge {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 99px;
+  background: linear-gradient(135deg, rgba(109,40,217,.2), rgba(168,85,247,.1));
+  border: 1px solid rgba(109,40,217,.25);
+}
+.xpLevelIcon { font-size: 13px; }
+.xpLevel { font-size: 13px; font-weight: 700; color: var(--accent); }
+.xpNext { color: var(--text-3); font-size: 11px; }
+.xpShimmer {
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.3) 50%, transparent 100%);
+  animation: shimmer 2.5s infinite;
+}
+@keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(200%)} }
+.xpFill { position: relative; overflow: hidden; }
+
+/* ── Task tags ── */
+.taskNameRow { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.taskTag {
+  font-size: 10px; color: var(--accent); background: var(--accent-soft);
+  padding: 1px 7px; border-radius: 99px;
+  border: 1px solid rgba(109,40,217,.2);
+}
+
+/* ── Quantity progress (improved) ── */
+.qWrap { margin-top: 5px; }
+.qTop  { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.qTrack { flex: 1; height: 5px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+.qFill  { height: 100%; background: linear-gradient(90deg, var(--accent), #a855f7); border-radius: 99px; transition: width .4s var(--ease-out); }
+.qPct   { font-size: 10.5px; color: var(--text-3); min-width: 28px; text-align: right; }
+.qBottom { display: flex; align-items: center; justify-content: space-between; }
+.qLabel  { font-size: 11.5px; color: var(--text-2); }
+.qBtns   { display: flex; gap: 4px; }
+.qBtn {
+  padding: 2px 9px; border-radius: 6px;
+  border: 1px solid var(--border-2); background: var(--surface-2);
+  color: var(--text-2); font-size: 11px; cursor: pointer;
+  transition: border-color .13s, color .13s;
+}
+.qBtn:hover { border-color: var(--accent); color: var(--accent); }
+.qBtnPrimary { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+
+/* ── Badge grid ── */
+.badgeGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.badgeItem {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 10px; border-radius: 9px;
+  border: 1px solid var(--border); background: var(--surface-2);
+  opacity: .4; transition: opacity .2s, border-color .2s;
+  position: relative; overflow: hidden;
+}
+.badgeEarned {
+  opacity: 1; border-color: rgba(109,40,217,.35);
+  background: linear-gradient(135deg, var(--accent-soft), var(--surface-2));
+}
+.badgeEmoji { font-size: 15px; flex-shrink: 0; }
+.badgeName  { font-size: 11px; font-weight: 500; color: var(--text-2); line-height: 1.3; }
+.badgeCheck {
+  position: absolute; top: 3px; right: 5px;
+  font-size: 9px; color: var(--green); font-weight: 700;
+}
+
+/* ── Badge toast ── */
+.badgeToast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  display: flex; flex-direction: column; gap: 8px;
+  animation: slideUp .4s var(--ease-out);
+}
+@keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+.badgeToastItem {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 18px; border-radius: 14px;
+  background: var(--surface); border: 1px solid rgba(109,40,217,.35);
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  min-width: 280px;
+}
+.badgeToastIcon { font-size: 28px; }
+.badgeToastTitle { font-size: 10.5px; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; }
+.badgeToastName  { font-size: 14px; font-weight: 700; color: var(--text); }
+.badgeToastDesc  { font-size: 11.5px; color: var(--text-2); }
+
+/* Category tags — all categories */
+.cat-study    { background: rgba(96,165,250,.15);  color: #60a5fa; }
+.cat-activity { background: rgba(251,146,60,.15);  color: #fb923c; }
+.cat-sport    { background: rgba(34,197,94,.15);   color: #22c55e; }
+.cat-health   { background: rgba(239,68,68,.15);   color: #ef4444; }
+.cat-work     { background: rgba(234,179,8,.15);   color: #eab308; }
+.cat-personal { background: rgba(109,40,217,.15);  color: #9b72f8; }
+.cat-leisure  { background: rgba(20,184,166,.15);  color: #14b8a6; }
+.cat-other    { background: rgba(113,113,122,.15); color: #a1a1aa; }

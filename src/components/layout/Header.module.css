@@ -1,0 +1,83 @@
+.header {
+  position: sticky; top: 0; z-index: var(--z-sticky);
+  height: 58px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--border);
+}
+
+.logo { display: flex; align-items: center; gap: 10px; user-select: none; }
+.logoIcon {
+  width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+  background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: none;
+  position: relative;
+}
+.logoDot {
+  position: absolute; top: -2px; right: -2px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #22c55e; border: 1.5px solid var(--bg);
+  animation: pulseDot 2.5s ease-in-out infinite;
+}
+.logoName { font-size: 15px; font-weight: 700; letter-spacing: -0.03em; color: var(--text); }
+.logoSub  { font-size: 9.5px; color: var(--text-3); letter-spacing: 0.1em; text-transform: uppercase; }
+
+.right { display: flex; align-items: center; gap: 4px; }
+
+.iconBtn {
+  width: 36px; height: 36px; border-radius: var(--radius-md);
+  border: none; background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-2);
+  transition: background var(--duration-fast), color var(--duration-fast), transform 0.1s;
+  position: relative;
+}
+.iconBtn:hover  { background: var(--surface-2); color: var(--text); }
+.iconBtn:active { transform: scale(0.91); }
+.iconBtn.active { background: var(--accent-soft); color: var(--accent); }
+
+.badge {
+  position: absolute; top: -3px; right: -3px;
+  min-width: 16px; height: 16px; padding: 0 3px;
+  background: #ef4444; color: #fff;
+  font-size: 9.5px; font-weight: 600;
+  border-radius: 99px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid var(--bg);
+  animation: popIn 0.22s var(--ease-spring);
+}
+
+.ring { animation: bellRing 0.6s ease-in-out; }
+
+.bellWrap { position: relative; }
+
+.userWrap { display: flex; align-items: center; gap: 2px; margin-left: 4px; }
+.avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  font-size: 13px; font-weight: 600;
+  border: none; cursor: default;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Mobile additions ── */
+.left { display: flex; align-items: center; gap: 10px; }
+.menuBtn {
+  display: none;
+  width: 36px; height: 36px; border-radius: var(--radius-md);
+  border: none; background: transparent;
+  align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-2);
+  transition: background var(--duration-fast), color var(--duration-fast);
+}
+.menuBtn:hover { background: var(--surface-2); color: var(--text); }
+@media (max-width: 768px) {
+  .menuBtn { display: flex; }
+  .newTaskLabel { display: none; }
+  .logoutBtn { display: flex !important; }
+}

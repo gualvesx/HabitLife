@@ -1,0 +1,43 @@
+.wrap { display: flex; flex-direction: column; gap: 5px; }
+.label { font-size: 12px; font-weight: 500; color: var(--text-2); }
+
+.field { position: relative; display: flex; align-items: center; }
+.icon {
+  position: absolute; left: 12px;
+  display: flex; align-items: center; color: var(--text-3);
+  pointer-events: none;
+}
+.toggle {
+  position: absolute; right: 10px;
+  background: none; border: none; cursor: pointer;
+  color: var(--text-3); display: flex; align-items: center;
+  padding: 4px; border-radius: 4px;
+  transition: color var(--duration-fast);
+}
+.toggle:hover { color: var(--text-2); }
+
+.input {
+  width: 100%; height: 42px;
+  padding: 0 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+}
+.input::placeholder { color: var(--text-3); }
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  background: var(--surface);
+}
+.input.hasIcon { padding-left: 38px; }
+.input.hasToggle { padding-right: 38px; }
+
+.hasError .input { border-color: var(--red); }
+.hasError .input:focus { box-shadow: 0 0 0 3px var(--red-soft); }
+
+.error { font-size: 11.5px; color: var(--red); }
+.hint  { font-size: 11.5px; color: var(--text-3); }
