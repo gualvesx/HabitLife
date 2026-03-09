@@ -1,6 +1,10 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 
+// Raw GitHub URL — served directly as binary, no redirect issues
+// blob/ links return HTML; raw.githubusercontent.com serves the actual file
+const RAW_URL = 'https://raw.githubusercontent.com/gualvesx/HabitLife/main/public/amethyst_cortex.glb'
+
 export function Brain3D({ className, style }) {
   const canvasRef = useRef(null)
 
@@ -14,7 +18,7 @@ export function Brain3D({ className, style }) {
     renderer.toneMapping = THREE.ACESFilmicToneMapping
     renderer.toneMappingExposure = 1.1
 
-    const scene  = new THREE.Scene()
+    const scene = new THREE.Scene()
     const w = canvas.clientWidth || 460
     const h = canvas.clientHeight || 460
     renderer.setSize(w, h, false)
@@ -22,10 +26,10 @@ export function Brain3D({ className, style }) {
     camera.position.set(0, 0.15, 4.2)
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.6))
-    const key = new THREE.DirectionalLight(0xddd6fe, 3.5); key.position.set(5, 8, 5); scene.add(key)
-    const back = new THREE.DirectionalLight(0x4c1d95, 2.2); back.position.set(-5, -3, -4); scene.add(back)
-    const rim  = new THREE.PointLight(0xa78bfa, 4, 12);   rim.position.set(2, 4, -3);   scene.add(rim)
-    const fill = new THREE.PointLight(0x7c3aed, 2.5, 10); fill.position.set(-4, 1, 3);  scene.add(fill)
+    const key  = new THREE.DirectionalLight(0xddd6fe, 3.5); key.position.set(5, 8, 5);   scene.add(key)
+    const back = new THREE.DirectionalLight(0x4c1d95, 2.2); back.position.set(-5,-3,-4); scene.add(back)
+    const rim  = new THREE.PointLight(0xa78bfa, 4, 12);     rim.position.set(2, 4, -3);  scene.add(rim)
+    const fill = new THREE.PointLight(0x7c3aed, 2.5, 10);   fill.position.set(-4, 1, 3); scene.add(fill)
 
     let model = null, animId = null
     let mouseX = 0, mouseY = 0, targetX = 0, targetY = 0
@@ -37,27 +41,33 @@ export function Brain3D({ className, style }) {
     }
     window.addEventListener('mousemove', onMouse, { passive: true })
 
-    // Use fetch + arraybuffer + parse() — avoids GLTFLoader.load(url) which
-    // fails when Vercel/CDN redirects large files (returns HTML instead of binary)
     ;(async () => {
       try {
         const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js')
         const loader = new GLTFLoader()
 
-        // fetch the binary ourselves so we control the response
-        const res = await fetch('/amethyst_cortex.glb')
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        // 1st attempt: local public/ (works when running locally or Vercel deploys the file)
+        // 2nd attempt: raw GitHub (works when public/ file is missing from deploy)
+        const urls = ['/amethyst_cortex.glb', RAW_URL]
+        let buf = null
 
-        // verify it's actually a GLB (magic bytes: glTF)
-        const buf = await res.arrayBuffer()
-        const magic = new Uint8Array(buf, 0, 4)
-        const isGLB = magic[0] === 0x67 && magic[1] === 0x6C &&
-                      magic[2] === 0x54 && magic[3] === 0x46
-        if (!isGLB) throw new Error('Not a valid GLB file')
+        for (const url of urls) {
+          try {
+            const res = await fetch(url)
+            if (!res.ok) continue
+            const candidate = await res.arrayBuffer()
+            // Validate GLB magic bytes: 0x676C5446 = "glTF"
+            const view = new Uint8Array(candidate, 0, 4)
+            if (view[0]===0x67 && view[1]===0x6C && view[2]===0x54 && view[3]===0x46) {
+              buf = candidate
+              break
+            }
+          } catch { /* try next */ }
+        }
 
-        const gltf = await new Promise((res2, rej2) =>
-          loader.parse(buf, '', res2, rej2)
-        )
+        if (!buf) throw new Error('All sources failed or returned non-GLB data')
+
+        const gltf = await new Promise((res2, rej2) => loader.parse(buf, '', res2, rej2))
 
         model = gltf.scene
         const box = new THREE.Box3().setFromObject(model)
@@ -77,7 +87,7 @@ export function Brain3D({ className, style }) {
         })
         scene.add(model)
       } catch (err) {
-        console.error('Brain3D: GLB load failed —', err.message)
+        console.error('Brain3D: failed to load GLB —', err.message)
       }
     })()
 
