@@ -1,73 +1,76 @@
-# React + TypeScript + Vite
+# HabitLife · Esporte
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+App de rastreamento de hábitos para atletas. React 18 + Vite 5, zero dependências de UI externas.
 
-Currently, two official plugins are available:
+## Rodar localmente
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
+# → http://localhost:5173
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Estrutura do projeto
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+src/
+├── App.jsx                      # Root — roteamento login ↔ app
+├── main.jsx                     # Entry point
+├── styles/
+│   └── globals.css              # Design tokens (CSS vars), reset, keyframes
+├── constants/
+│   ├── index.js                 # MONTHS, CATEGORIES, NAV_ITEMS, etc.
+│   └── icons.jsx                # Todos os ícones SVG inline
+├── utils/
+│   ├── storage.js               # Abstração do localStorage
+│   ├── auth.js                  # Helpers de autenticação
+│   ├── date.js                  # Funções de data
+│   └── capitalize.js
+├── hooks/
+│   ├── useTheme.js              # Tema claro/escuro persistido
+│   ├── useAuth.js               # Login, cadastro, sessão
+│   ├── useTasks.js              # CRUD de tarefas + persistência
+│   └── useNotifs.js             # Estado de notificações
+├── components/
+│   ├── ui/                      # Átomos reutilizáveis
+│   │   ├── Button.jsx / .module.css
+│   │   ├── Input.jsx  / .module.css
+│   │   ├── Modal.jsx  / .module.css
+│   │   ├── Toggle.jsx / .module.css
+│   │   └── Card.jsx   / .module.css
+│   ├── layout/                  # Estrutura da página
+│   │   ├── Header.jsx / .module.css
+│   │   ├── Sidebar.jsx / .module.css
+│   │   └── NotifPanel.jsx / .module.css
+│   ├── auth/                    # Fluxo de autenticação
+│   │   ├── AuthPage.jsx / .module.css
+│   │   ├── LoginForm.jsx / AuthForm.module.css
+│   │   └── RegisterForm.jsx
+│   └── tasks/
+│       └── TaskModal.jsx / .module.css
+└── pages/
+    ├── AppShell.jsx / .module.css   # Shell do app autenticado
+    ├── DashboardPage.jsx / .module.css
+    ├── TasksPage.jsx / .module.css
+    ├── CalendarPage.jsx / .module.css
+    ├── TimerPage.jsx / .module.css
+    ├── StatsPage.jsx / .module.css
+    └── SettingsPage.jsx / .module.css
+```
+
+## Expandir
+
+| O que adicionar         | Onde mexer                        |
+|-------------------------|-----------------------------------|
+| Nova página             | `src/pages/` + `constants/index.js` (NAV_ITEMS) |
+| Novo componente UI      | `src/components/ui/`              |
+| Nova rota/seção         | `AppShell.jsx`                    |
+| Nova variável de tema   | `styles/globals.css`              |
+| Novo ícone              | `constants/icons.jsx`             |
+| API real (backend)      | `utils/storage.js` → trocar por fetch |
+| Auth real               | `hooks/useAuth.js`                |
+
+## Tecnologias
+
+- **React 18** · **Vite 5** · **CSS Modules** · **localStorage**
+- Zero bibliotecas de UI externas — tudo feito do zero

@@ -1,0 +1,36 @@
+.form {
+  padding: 28px 28px 24px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+.top { display: flex; flex-direction: column; gap: 4px; }
+.heading { font-size: 20px; font-weight: 700; letter-spacing: -0.03em; color: var(--text); }
+.desc    { font-size: 13px; color: var(--text-2); }
+
+.fields { display: flex; flex-direction: column; gap: 14px; }
+
+.error {
+  display: flex; align-items: center; gap: 7px;
+  padding: 10px 12px; border-radius: var(--radius-md);
+  background: var(--red-soft); color: var(--red);
+  font-size: 12.5px; font-weight: 500;
+  border: 1px solid color-mix(in srgb, var(--red) 20%, transparent);
+  animation: fadeUp var(--duration-base) var(--ease-out);
+}
+
+.strengthWrap {
+  display: flex; align-items: center; gap: 8px; margin-top: 7px;
+}
+.strengthBars { display: flex; gap: 4px; flex: 1; }
+.strengthBar  {
+  flex: 1; height: 3px; border-radius: 99px;
+  transition: background 0.3s;
+}
+.strengthWrap span { font-size: 11px; font-weight: 500; width: 40px; text-align: right; }
+
+.switch     { font-size: 13px; color: var(--text-2); text-align: center; }
+.switchLink {
+  background: none; border: none; cursor: pointer;
+  color: var(--accent); font-size: 13px; font-weight: 500;
+  font-family: inherit; padding: 0;
+}
+.switchLink:hover { text-decoration: underline; }

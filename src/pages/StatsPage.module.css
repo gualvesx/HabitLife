@@ -1,0 +1,82 @@
+.page { display: flex; flex-direction: column; gap: 16px; }
+
+/* Top 3 */
+.top3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.metricVal { font-size: 42px; font-weight: 700; letter-spacing: -0.05em; color: var(--text); line-height: 1; }
+.metricLbl { font-size: 13px; color: var(--text-2); margin-top: 4px; margin-bottom: 12px; }
+
+.weekBars { display: flex; align-items: flex-end; gap: 8px; height: 76px; margin-top: 14px; }
+.barCol   { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; height: 100%; justify-content: flex-end; }
+.bar      { width: 100%; border-radius: 4px 4px 0 0; background: var(--accent); opacity: 0.3; min-height: 3px; transition: height 0.8s var(--ease-out); }
+.today    { opacity: 1; }
+.has      { opacity: 0.65; }
+.barLbl   { font-size: 9px; color: var(--text-3); text-transform: uppercase; font-weight: 500; }
+.todayLbl { color: var(--accent); }
+
+/* Streak */
+.streakRow   { margin-bottom: 12px; }
+.streakComp  { display: flex; flex-direction: column; gap: 3px; }
+.streakCompLbl { font-size: 11px; color: var(--text-3); }
+.streakCompVal { font-size: 14px; font-weight: 600; color: var(--text); }
+
+/* XP mini */
+.xpMini      { margin-top: 10px; }
+.xpMiniTop   { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-3); margin-bottom: 5px; }
+.xpMiniTrack { height: 5px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.xpMiniFill  { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #6d28d9, #a855f7); transition: width 1s var(--ease-out); }
+
+/* Monthly comparison */
+.monthComp    { display: flex; flex-direction: column; gap: 7px; }
+.monthCompRow { display: flex; justify-content: space-between; align-items: center; }
+.monthCompLbl { font-size: 12px; color: var(--text-2); }
+.monthCompVal { font-size: 15px; font-weight: 700; color: var(--text); }
+.monthMsg     { font-size: 12px; font-weight: 500; margin-top: 4px; }
+
+/* Heatmap */
+.heatmapWrap { overflow-x: auto; padding-bottom: 4px; }
+.heatmapDays { display: flex; flex-direction: column; gap: 3px; float: left; margin-right: 6px; padding-top: 2px; }
+.heatmapDayLabel { font-size: 9px; color: var(--text-3); height: 13px; line-height: 13px; font-weight: 500; }
+.heatmapGrid { display: flex; gap: 3px; }
+.heatmapWeek { display: flex; flex-direction: column; gap: 3px; }
+.heatCell    { width: 13px; height: 13px; border-radius: 2.5px; cursor: default; transition: transform .12s; }
+.heatCell:hover { transform: scale(1.4); }
+.heatLegend  { display: flex; align-items: center; gap: 4px; margin-top: 10px; float: right; clear: both; }
+.heatLegend span { font-size: 10px; color: var(--text-3); }
+.heatLegendCell  { width: 12px; height: 12px; border-radius: 2px; }
+
+/* Monthly bars */
+.monthBars { display: flex; align-items: flex-end; gap: 3px; height: 72px; overflow-x: auto; padding-bottom: 2px; }
+.mBarCol   { min-width: 14px; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; height: 100%; justify-content: flex-end; }
+.mBar      { width: 100%; border-radius: 3px 3px 0 0; background: var(--accent); min-height: 2px; transition: height 0.8s var(--ease-out); }
+.mBarLbl   { font-size: 7.5px; font-weight: 500; }
+
+/* Row3 */
+.row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.s3Ico { font-size: 22px; text-align: center; margin-bottom: 10px; }
+.s3Val { font-size: 28px; font-weight: 700; letter-spacing: -0.04em; color: var(--text); }
+.s3Lbl { font-size: 11.5px; color: var(--text-2); margin-top: 4px; }
+
+/* Category bars */
+.catBars { display: flex; flex-direction: column; gap: 14px; }
+.catRow  { }
+.catMeta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.catLbl  { font-size: 12.5px; color: var(--text-2); font-weight: 500; }
+.catRight{ display: flex; align-items: center; }
+.catTrack{ height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.catFill { height: 100%; border-radius: 99px; transition: width 0.9s var(--ease-out); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .top3 { grid-template-columns: 1fr 1fr; }
+  .top3 > *:last-child { grid-column: 1 / -1; }
+}
+@media (max-width: 600px) {
+  .top3 { grid-template-columns: 1fr; }
+  .top3 > *:last-child { grid-column: auto; }
+  .row3 { grid-template-columns: 1fr 1fr; }
+  .heatCell { width: 10px; height: 10px; }
+  .mBarLbl  { display: none; }
+}
+@media (max-width: 380px) {
+  .row3 { grid-template-columns: 1fr; }
+}
