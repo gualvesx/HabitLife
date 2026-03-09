@@ -187,7 +187,17 @@ export function TasksPage({ tasks, toggleTask, deleteTask, openModal, onStartFoc
       if (search && !t.name.toLowerCase().includes(search.toLowerCase())) return false
       if (project && t.project !== project) return false
       // Date strip filter — always filter by selected date unless a status filter is active
-      if (filter === 'all' && t.date !== selectedDate) return false
+      if (filter === 'all') {
+        // daily_until_done: show on every day from start date until completed
+        if (t.frequencyType === 'daily_until_done') {
+          if (t.date > selectedDate) return false  // not started yet
+          if (t.done && t.date !== selectedDate) return false  // done, only show on its own date
+          return true
+        }
+        // daily habits: show on every day
+        if (t.frequencyType === 'daily' || t.isHabit) return true
+        if (t.date !== selectedDate) return false
+      }
       if (filter === 'today')   return t.date === today
       if (filter === 'pending') return !t.done
       if (filter === 'done')    return t.done
@@ -225,7 +235,7 @@ export function TasksPage({ tasks, toggleTask, deleteTask, openModal, onStartFoc
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className={s.searchIcon}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input className={s.search} placeholder="Buscar tarefa..." value={search} onChange={e => setSearch(e.target.value)} />
         </div>
-        <Button size="sm" icon={<Icon.Plus width={13} height={13} />} onClick={openModal}>Nova tarefa</Button>
+        <Button size="sm" icon={<Icon.Plus width={13} height={13} />} onClick={openModal}>Adicionar item</Button>
       </div>
 
       {/* Projects filter */}
@@ -259,9 +269,9 @@ export function TasksPage({ tasks, toggleTask, deleteTask, openModal, onStartFoc
           <div className={s.emptyIco}><Icon.Inbox width={28} height={28} /></div>
           <p className={s.emptyTitle}>Nenhuma tarefa encontrada</p>
           <p className={s.emptyDesc}>
-            {search ? 'Tente outro termo de busca' : 'Clique em "Nova tarefa" para começar'}
+            {search ? 'Tente outro termo de busca' : 'Clique em "Adicionar item" para começar'}
           </p>
-          {!search && <Button size="sm" onClick={openModal} icon={<Icon.Plus width={12} height={12} />}>Criar primeira tarefa</Button>}
+          {!search && <Button size="sm" onClick={openModal} icon={<Icon.Plus width={12} height={12} />}>Adicionar item</Button>}
         </div>
       ) : filtered.map(t => (
         <TaskRow key={t.id} t={t}

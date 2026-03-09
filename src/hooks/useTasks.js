@@ -14,6 +14,7 @@ const fromDB = row => ({
   frequencyType:  row.frequency_type ?? 'none',
   frequencyDays:  (() => { try { return JSON.parse(row.frequency_days||'[]') } catch { return [] } })(),
   frequencyInterval: row.frequency_interval ?? 1,
+  isHabit:       row.is_habit ?? false,
   goalValue:      row.goal_value    ?? 0,
   currentValue:   row.current_value ?? 0,
   goalUnit:       row.goal_unit     ?? '',

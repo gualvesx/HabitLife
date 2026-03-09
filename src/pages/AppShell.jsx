@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import { Header }        from '../components/layout/Header'
 import { Sidebar }       from '../components/layout/Sidebar'
-import { TaskModal }     from '../components/tasks/TaskModal'
+import { AddItemModal }  from '../components/tasks/AddItemModal'
 import { DashboardPage } from './DashboardPage'
 import { TasksPage }     from './TasksPage'
 import { CalendarPage }  from './CalendarPage'
@@ -102,7 +102,7 @@ export function AppShell({ user, dark, onToggleTheme, onLogout, tasks, taskLoadi
         </main>
       </div>
 
-      <TaskModal open={modalOpen} onClose={() => setModalOpen(false)} onSave={handleSaveTask} defaultDate={todayKey()} />
+      <AddItemModal open={modalOpen} onClose={() => setModalOpen(false)} onSave={handleSaveTask} defaultDate={todayKey()} />
     </div>
   )
 }

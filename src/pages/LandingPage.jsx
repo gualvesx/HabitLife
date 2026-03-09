@@ -427,7 +427,7 @@ export function LandingPage({ onEnter }) {
 
           <h1 className={s.heroH1}>
             <span className={s.heroLine1}>Cada segundo</span>
-            <span className={s.heroLine2}>conta para sua</span>
+            <span className={s.heroLine2}>conta para</span>
             <span className={s.heroLine3}><TypewriterPhrase /></span>
           </h1>
 

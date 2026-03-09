@@ -68,7 +68,7 @@ export function Header({ dark, onToggleTheme, notifs, onAddTask, user, onLogout,
         )}
 
         <Button icon={<Icon.Plus width={14} height={14} />} onClick={onAddTask} size="sm">
-          <span className={s.newTaskLabel}>Nova Tarefa</span>
+          <span className={s.newTaskLabel}>Adicionar item</span>
         </Button>
       </div>
     </header>
