@@ -333,47 +333,6 @@
 .qBtn:hover { border-color: var(--accent); color: var(--accent); }
 .qBtnPrimary { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
 
-/* ── Shop trigger ── */
-.shopTrigger {
-  margin-top: 4px; padding: 2px 8px; border-radius: 6px; border: none;
-  background: var(--accent-soft); color: var(--accent); font-size: 11px;
-  cursor: pointer; font-weight: 600; transition: background .15s;
-}
-.shopTrigger:hover { background: var(--accent); color: #fff; }
-
-/* ── Shop modal ── */
-.shopOverlay {
-  position: fixed; inset: 0; z-index: 9000;
-  background: rgba(0,0,0,.6); backdrop-filter: blur(4px);
-  display: flex; align-items: center; justify-content: center;
-  animation: fadein .2s;
-}
-.shopModal {
-  background: var(--surface); border: 1px solid var(--border-2);
-  border-radius: 18px; padding: 24px; width: 440px; max-width: 95vw;
-  box-shadow: 0 24px 80px rgba(0,0,0,.5);
-}
-.shopHeader { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
-.shopTitle  { font-size: 16px; font-weight: 700; color: var(--text); flex: 1; }
-.shopCoins  { font-size: 13.5px; font-weight: 600; color: var(--yellow); background: var(--yellow-soft); padding: 4px 12px; border-radius: 99px; }
-.shopClose  { border: none; background: none; color: var(--text-3); cursor: pointer; font-size: 16px; padding: 4px; }
-.shopGrid   { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
-.shopItem   { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface-2); transition: border-color .15s; }
-.shopItem:hover:not(.shopItemDisabled) { border-color: var(--accent); }
-.shopItemDisabled { opacity: .45; }
-.shopItemIcon { font-size: 22px; }
-.shopItemInfo { flex: 1; }
-.shopItemName { font-size: 13.5px; font-weight: 600; color: var(--text); }
-.shopItemDesc { font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
-.shopBuyBtn {
-  padding: 6px 14px; border-radius: 8px; border: none;
-  background: var(--accent); color: #fff; font-weight: 600; font-size: 12.5px;
-  cursor: pointer; white-space: nowrap; transition: filter .15s;
-}
-.shopBuyBtn:hover:not(:disabled) { filter: brightness(1.1); }
-.shopBuyBtn:disabled { opacity: .5; cursor: not-allowed; }
-.shopNote { font-size: 11.5px; color: var(--text-3); text-align: center; }
-
 /* ── Badge grid ── */
 .badgeGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .badgeItem {
@@ -412,3 +371,13 @@
 .badgeToastTitle { font-size: 10.5px; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; }
 .badgeToastName  { font-size: 14px; font-weight: 700; color: var(--text); }
 .badgeToastDesc  { font-size: 11.5px; color: var(--text-2); }
+
+/* Category tags — all categories */
+.cat-study    { background: rgba(96,165,250,.15);  color: #60a5fa; }
+.cat-activity { background: rgba(251,146,60,.15);  color: #fb923c; }
+.cat-sport    { background: rgba(34,197,94,.15);   color: #22c55e; }
+.cat-health   { background: rgba(239,68,68,.15);   color: #ef4444; }
+.cat-work     { background: rgba(234,179,8,.15);   color: #eab308; }
+.cat-personal { background: rgba(109,40,217,.15);  color: #9b72f8; }
+.cat-leisure  { background: rgba(20,184,166,.15);  color: #14b8a6; }
+.cat-other    { background: rgba(113,113,122,.15); color: #a1a1aa; }

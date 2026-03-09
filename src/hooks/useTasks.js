@@ -232,7 +232,7 @@ export function useTasks(userId) {
         .update({ current_value: newVal, is_done: isDone }).eq('id', id).eq('user_id', userId).select().single()
       if (!error && data) {
         setTasks(prev => prev.map(t => t.id === id ? fromDB(data) : t))
-        if (isDone) { addXP(task.xpValue || 20); addCoins(2) }
+        if (isDone) { addXP(task.xpValue || 20) }
       }
       return
     }
@@ -241,7 +241,7 @@ export function useTasks(userId) {
       .update({ is_done: newDone }).eq('id', id).eq('user_id', userId).select().single()
     if (!error && data) {
       setTasks(prev => prev.map(t => t.id === id ? fromDB(data) : t))
-      if (newDone) { addXP(task.xpValue || 10); addCoins(1) }
+      if (newDone) { addXP(task.xpValue || 10) }
     }
   }, [tasks, userId])
 
@@ -252,7 +252,7 @@ export function useTasks(userId) {
       .update({ current_value: newVal, is_done: isDone }).eq('id', id).eq('user_id', userId).select().single()
     if (!error && data) {
       setTasks(prev => prev.map(t => t.id === id ? fromDB(data) : t))
-      if (isDone) { addXP(task.xpValue || 20); addCoins(2) }
+      if (isDone) { addXP(task.xpValue || 20) }
     }
   }, [tasks, userId])
 

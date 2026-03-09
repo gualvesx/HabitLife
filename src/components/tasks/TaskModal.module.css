@@ -1,7 +1,15 @@
-/* Tabs */
-.tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 16px; overflow-x: auto; gap: 2px; }
+/* Tabs — sticky inside modal body */
+.tabs {
+  display: flex; border-bottom: 1px solid var(--border);
+  margin: 0 -20px; padding: 0 20px;
+  overflow-x: auto; gap: 2px; flex-shrink: 0;
+  position: sticky; top: 0; background: var(--surface); z-index: 2;
+  margin-top: 16px;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
 .tabBtn {
-  flex: 1; min-width: max-content; padding: 10px 12px;
+  flex: 1; min-width: max-content; padding: 10px 10px;
   border: none; background: transparent; border-bottom: 2px solid transparent;
   font-family: inherit; font-size: 12px; font-weight: 500; color: var(--text-3);
   cursor: pointer; white-space: nowrap;
@@ -10,14 +18,42 @@
 .tabBtn:hover { color: var(--text-2); }
 .tabActive { color: var(--accent) !important; border-bottom-color: var(--accent) !important; }
 
-.tabContent { display: flex; flex-direction: column; gap: 14px; }
+.tabContent { display: flex; flex-direction: column; gap: 14px; margin-top: 16px; padding-bottom: 4px; }
 
 .label { font-size: 12px; font-weight: 500; color: var(--text-2); margin-bottom: 7px; }
+
+/* Category grid */
+.catGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.catBtn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 8px; border-radius: 9px;
+  border: 1.5px solid var(--border-2); background: var(--surface-2);
+  color: var(--text-2); font-family: inherit; font-size: 11.5px; font-weight: 500;
+  cursor: pointer; white-space: nowrap;
+  transition: border-color .15s, background .15s, color .15s;
+}
+.catBtn:hover { border-color: var(--border-3); color: var(--text); }
+.catActive { border-color: var(--accent) !important; background: var(--accent-soft) !important; color: var(--accent) !important; }
+.catIcon {
+  width: 20px; height: 20px; border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+/* Category icon color variants */
+.cat-study    { background: rgba(59,130,246,.15); color: var(--blue); }
+.cat-activity { background: rgba(249,115,22,.15); color: var(--orange); }
+.cat-sport    { background: rgba(34,197,94,.15); color: var(--green); }
+.cat-health   { background: rgba(239,68,68,.15); color: var(--red); }
+.cat-work     { background: rgba(234,179,8,.15); color: var(--yellow); }
+.cat-personal { background: rgba(109,40,217,.15); color: var(--accent); }
+.cat-leisure  { background: rgba(20,184,166,.15); color: #14b8a6; }
+.cat-other    { background: rgba(107,114,128,.15); color: var(--text-3); }
 
 /* Chips */
 .chipRow { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip {
-  padding: 6px 13px; border-radius: 8px;
+  display: flex; align-items: center; gap: 5px;
+  padding: 6px 12px; border-radius: 8px;
   border: 1.5px solid var(--border-2); background: var(--surface-2);
   color: var(--text-2); font-family: inherit; font-size: 12px;
   cursor: pointer; white-space: nowrap;
@@ -25,9 +61,20 @@
 }
 .chip:hover { border-color: var(--border-3); color: var(--text); }
 .chipActive { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+.priorityDot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 
-/* Row */
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* Tags */
+.tagList { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 7px; }
+.tagChip {
+  display: flex; align-items: center; gap: 4px;
+  padding: 3px 9px; border-radius: 99px;
+  background: var(--accent-soft); border: 1px solid rgba(109,40,217,.2);
+  color: var(--accent); font-size: 11.5px; font-weight: 500;
+}
+.tagDel { border: none; background: none; color: var(--accent); cursor: pointer; font-size: 14px; line-height: 1; opacity: .6; }
+.tagDel:hover { opacity: 1; }
 
 /* Subtasks */
 .subRow {
@@ -37,9 +84,9 @@
   margin-bottom: 5px;
 }
 .subText { flex: 1; font-size: 13px; color: var(--text); }
-.subDel { border: none; background: none; color: var(--text-3); cursor: pointer; font-size: 12px; padding: 2px 4px; transition: color .15s; }
+.subDel { border: none; background: none; color: var(--text-3); cursor: pointer; padding: 2px; display: flex; transition: color .15s; }
 .subDel:hover { color: var(--red); }
-.subInput { display: flex; gap: 6px; margin-top: 2px; }
+.subInput { display: flex; gap: 6px; }
 .subInputField {
   flex: 1; padding: 7px 10px; border-radius: 8px;
   border: 1.5px solid var(--border-2); background: var(--surface-2);
@@ -49,9 +96,9 @@
 .subInputField:focus { border-color: var(--accent); }
 .subInputField::placeholder { color: var(--text-3); }
 .subAddBtn {
-  width: 32px; height: 32px; border-radius: 8px;
+  width: 34px; height: 34px; border-radius: 8px;
   border: 1.5px solid var(--accent); background: var(--accent-soft);
-  color: var(--accent); font-size: 18px; cursor: pointer; flex-shrink: 0;
+  color: var(--accent); cursor: pointer; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   transition: background .15s;
 }
@@ -59,28 +106,18 @@
 
 /* Textarea */
 .textarea {
-  width: 100%; padding: 9px 12px;
-  background: var(--surface-2); border: 1.5px solid var(--border-2);
-  border-radius: var(--radius-md); color: var(--text);
-  font-family: inherit; font-size: 13px; line-height: 1.5;
-  resize: vertical; outline: none; transition: border-color .18s;
+  width: 100%; box-sizing: border-box;
+  padding: 10px 12px; border-radius: 10px;
+  border: 1.5px solid var(--border-2); background: var(--surface-2);
+  color: var(--text); font-family: inherit; font-size: 13px; line-height: 1.5;
+  outline: none; resize: vertical; min-height: 70px;
+  transition: border-color .18s;
 }
 .textarea:focus { border-color: var(--accent); }
 .textarea::placeholder { color: var(--text-3); }
 
-/* Days */
-.dayRow { display: flex; gap: 6px; flex-wrap: wrap; }
-.dayBtn {
-  width: 36px; height: 36px; border-radius: 50%;
-  border: 1.5px solid var(--border-2); background: var(--surface-2);
-  color: var(--text-2); font-family: inherit; font-size: 12px; font-weight: 500;
-  cursor: pointer; transition: border-color .15s, background .15s, color .15s;
-}
-.dayBtn:hover { border-color: var(--border-3); color: var(--text); }
-.dayActive { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
-
-/* Interval */
-.intervalRow { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+/* Interval row */
+.intervalRow { display: flex; align-items: center; gap: 10px; }
 .intervalBtn {
   width: 32px; height: 32px; border-radius: 8px;
   border: 1.5px solid var(--border-2); background: var(--surface-2);
@@ -89,93 +126,74 @@
   transition: border-color .15s, color .15s;
 }
 .intervalBtn:hover { border-color: var(--accent); color: var(--accent); }
-.intervalVal { font-size: 22px; font-weight: 700; color: var(--text); min-width: 36px; text-align: center; }
-.intervalUnit { font-size: 13px; color: var(--text-2); }
-.reminderList { font-size: 11.5px; color: var(--accent); margin-top: 5px; font-style: italic; }
+.intervalVal  { font-size: 18px; font-weight: 700; color: var(--text); min-width: 40px; text-align: center; }
+.intervalUnit { font-size: 13px; color: var(--text-3); }
 
-/* Goal info */
-.goalInfo {
-  display: flex; gap: 12px; align-items: flex-start;
-  background: var(--accent-soft); border: 1px solid rgba(109,40,217,0.18);
-  border-radius: 12px; padding: 14px;
-}
-.goalInfoIcon { font-size: 22px; flex-shrink: 0; }
-.goalInfoTitle { font-size: 13.5px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-.goalInfoDesc  { font-size: 12px; color: var(--text-2); line-height: 1.5; }
-.goalPreview {
-  font-size: 12px; color: var(--text-2); margin-top: 10px;
-  padding: 8px 12px; background: var(--surface-2);
-  border-radius: 8px; border: 1px solid var(--border);
-}
-.goalPreview strong { color: var(--accent); }
-.xpNote {
-  display: flex; gap: 8px; align-items: center;
-  font-size: 12px; color: var(--text-3); padding: 10px 12px;
-  background: var(--surface-2); border-radius: 8px;
-}
-.xpNote strong { color: var(--yellow); }
-
-/* Method */
-.methodInfo { font-size: 12.5px; color: var(--text-2); line-height: 1.6; }
-.methodGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.methodCard {
-  padding: 11px 12px; border-radius: 10px;
+/* Day row */
+.dayRow { display: flex; gap: 6px; flex-wrap: wrap; }
+.dayBtn {
+  width: 36px; height: 36px; border-radius: 50%;
   border: 1.5px solid var(--border-2); background: var(--surface-2);
-  text-align: left; cursor: pointer;
-  transition: border-color .18s, background .18s, transform .15s;
+  color: var(--text-2); font-family: inherit; font-size: 12px; font-weight: 600;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: border-color .15s, background .15s, color .15s;
 }
-.methodCard:hover { border-color: var(--border-3); transform: translateY(-1px); }
-.methodActive { border-color: var(--accent); background: var(--accent-soft); }
-.methodLabel { font-size: 12.5px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
-.methodDesc  { font-size: 11px; color: var(--text-3); line-height: 1.4; }
+.dayBtn:hover { border-color: var(--accent); color: var(--accent); }
+.dayActive { border-color: var(--accent); background: var(--accent); color: #fff; }
 
-/* Footer */
-.footer {
-  display: flex; justify-content: flex-end; gap: 8px;
-  padding-top: 14px; border-top: 1px solid var(--border); margin-top: 8px;
+/* Reminder list */
+.reminderList { font-size: 11.5px; color: var(--text-3); margin-top: 6px; padding: 6px 10px; background: var(--surface-2); border-radius: 8px; }
+
+/* Goal */
+.goalInfo {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 14px; border-radius: 10px;
+  background: var(--accent-soft); border: 1px solid rgba(109,40,217,.2);
 }
+.goalInfoTitle { font-size: 13.5px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.goalInfoDesc  { font-size: 12px; color: var(--text-2); }
 
-@media (max-width: 480px) {
-  .row2 { grid-template-columns: 1fr; }
-  .methodGrid { grid-template-columns: 1fr; }
-  .tabBtn { font-size: 11px; padding: 8px 8px; }
-}
-
-/* Tags */
-.tagList { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; min-height: 0; }
-.tagChip {
-  display: flex; align-items: center; gap: 4px;
-  padding: 3px 9px; border-radius: 99px;
-  background: var(--accent-soft); border: 1px solid rgba(109,40,217,.25);
-  color: var(--accent); font-size: 11.5px; font-weight: 500;
-}
-.tagDel { border: none; background: none; color: var(--accent); cursor: pointer; font-size: 14px; line-height: 1; opacity: .6; transition: opacity .15s; padding: 0; }
-.tagDel:hover { opacity: 1; }
-
-/* Goal preview */
-.goalPreview {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px; border-radius: 10px;
+/* XP note */
+.xpNote {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px; border-radius: 9px;
   background: var(--surface-2); border: 1px solid var(--border);
   font-size: 12.5px; color: var(--text-2);
 }
-.goalPreviewBar { flex: 1; height: 4px; background: var(--border-2); border-radius: 99px; overflow: hidden; }
-.goalPreviewFill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: 99px; }
-.goalXP { color: var(--accent); font-size: 11px; font-weight: 600; white-space: nowrap; }
 
-/* Method groups */
+/* Methods */
+.methodInfo { font-size: 12.5px; color: var(--text-2); line-height: 1.5; }
 .methodGroup {
   font-size: 10.5px; font-weight: 700; color: var(--text-3);
   text-transform: uppercase; letter-spacing: .08em;
-  margin: 10px 0 6px;
+  margin: 8px 0 6px;
 }
-.methodGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 4px; }
+.methodGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 2px; }
 .methodCard {
-  padding: 10px 12px; border-radius: 10px; text-align: left;
+  padding: 9px 11px; border-radius: 10px; text-align: left;
   border: 1.5px solid var(--border-2); background: var(--surface-2);
   cursor: pointer; transition: border-color .15s, background .15s, transform .1s;
 }
 .methodCard:hover { border-color: var(--border-3); transform: translateY(-1px); }
 .methodActive { border-color: var(--accent) !important; background: var(--accent-soft) !important; }
-.methodLabel { font-size: 12.5px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
-.methodDesc  { font-size: 11px; color: var(--text-3); line-height: 1.35; }
+.methodLabel { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.methodDesc  { font-size: 10.5px; color: var(--text-3); line-height: 1.35; }
+
+/* Footer — sticky at bottom */
+.footer {
+  display: flex; justify-content: flex-end; gap: 8px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  margin: 8px -20px 0;
+  flex-shrink: 0;
+  position: sticky; bottom: 0;
+  background: var(--surface);
+  z-index: 2;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .catGrid { grid-template-columns: repeat(2, 1fr); }
+  .methodGrid { grid-template-columns: 1fr; }
+  .row2 { grid-template-columns: 1fr; }
+}

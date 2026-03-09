@@ -167,7 +167,7 @@ export function StatsPage({ tasks }) {
           <div className={s.streakRow}>
             <div className={s.streakComp}>
               <span className={s.streakCompLbl}>Recorde pessoal</span>
-              <span className={s.streakCompVal}>{xpData.bestStreak} dias 🏆</span>
+              <span className={s.streakCompVal}>{xpData.bestStreak} dias </span>
             </div>
           </div>
           <div className={s.xpMini}>
@@ -194,7 +194,7 @@ export function StatsPage({ tasks }) {
             </div>
             {monthDiff !== 0 && (
               <div className={s.monthMsg} style={{ color: monthDiff > 0 ? 'var(--green)' : 'var(--red)' }}>
-                {monthDiff > 0 ? `✓ +${monthDiff} tarefas a mais!` : `⚠ ${Math.abs(monthDiff)} tarefas a menos`}
+                {monthDiff > 0 ? `+${monthDiff} tarefas a mais!` : `${Math.abs(monthDiff)} tarefas a menos`}
               </div>
             )}
           </div>
@@ -226,9 +226,9 @@ export function StatsPage({ tasks }) {
       {/* Row: totals + focus time */}
       <div className={s.row3}>
         {[
-          { lbl: 'Total criadas', val: total,       bg: 'var(--blue-soft)',   c: 'var(--blue)',   icon: '📋' },
-          { lbl: 'Concluídas',   val: done,          bg: 'var(--green-soft)',  c: 'var(--green)',  icon: '✅' },
-          { lbl: 'Foco (min)',   val: Math.round(totalFocusMins), bg: 'var(--yellow-soft)', c: 'var(--yellow)', icon: '🍅' },
+          { lbl: 'Total criadas', val: total,       bg: 'var(--blue-soft)',   c: 'var(--blue)',   icon: <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg> },
+          { lbl: 'Concluídas',   val: done,          bg: 'var(--green-soft)',  c: 'var(--green)',  icon: <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round'><polyline points='20 6 9 17 4 12'/></svg> },
+          { lbl: 'Foco (min)',   val: Math.round(totalFocusMins), bg: 'var(--yellow-soft)', c: 'var(--yellow)', icon: <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round'><circle cx='12' cy='12' r='10'/><polyline points='12 6 12 12 16 14'/></svg> },
         ].map((s2, i) => (
           <Card key={i} style={{ textAlign: 'center' }}>
             <div className={s.s3Ico} style={{ background: s2.bg, color: s2.c }}>{s2.icon}</div>
@@ -262,7 +262,7 @@ export function StatsPage({ tasks }) {
       {/* Focus by category */}
       {focusLog.length > 0 && (
         <Card>
-          <CardHeader title="🍅 Tempo de foco por categoria" />
+          <CardHeader title="Tempo de foco por categoria" />
           <div className={s.catBars}>
             {Object.entries(focusBycat).map(([cat, secs]) => {
               const mins  = Math.round(secs / 60)

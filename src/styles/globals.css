@@ -203,3 +203,13 @@ a { color: inherit; text-decoration: none; }
 .glow-card:hover::before { opacity: 1; }
 /* Ensure card children sit above the glow layer */
 .glow-card > * { position: relative; z-index: 1; }
+
+/* ── Category color dots (shared across pages) ───────────────────── */
+.cat-study    { background: var(--blue); }
+.cat-activity { background: var(--orange); }
+.cat-sport    { background: #22c55e; }
+.cat-health   { background: var(--red); }
+.cat-work     { background: var(--yellow); }
+.cat-personal { background: var(--accent); }
+.cat-leisure  { background: #14b8a6; }
+.cat-other    { background: var(--text-3); }

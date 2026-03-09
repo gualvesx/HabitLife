@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { LogoIcon } from '../components/ui/LogoIcon'
+import { Brain3D } from '../components/ui/Brain3D'
 import s from './LandingPage.module.css'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -451,18 +452,11 @@ export function LandingPage({ onEnter }) {
           </div>
         </div>
 
-        {/* 3D Brain — Amethyst Cortex by gusxtavoxs on Sketchfab */}
+        {/* 3D Brain — local GLB model */}
         <div className={[s.brainWrap, heroVis ? s.visible : ''].join(' ')}>
           <div className={s.brainGlow} aria-hidden />
           <div className={s.brainFrame}>
-            <iframe
-              title="Amethyst Cortex"
-              frameBorder="0"
-              allowFullScreen
-              allow="autoplay; fullscreen; xr-spatial-tracking"
-              src="https://sketchfab.com/models/a422a66096f94b60ad77a6cff52e9e71/embed?autospin=0.3&autostart=1&transparent=1&ui_controls=0&ui_infos=0&ui_inspector=0&ui_stop=0&ui_watermark=0&ui_watermark_link=0&camera=0&preload=1"
-              className={s.brainIframe}
-            />
+            <Brain3D className={s.brainCanvas} />
           </div>
           <div className={s.brainLabel}>
             <span className={s.brainLabelDot} />

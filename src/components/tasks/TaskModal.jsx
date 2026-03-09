@@ -2,19 +2,39 @@ import { useState } from 'react'
 import { Modal }  from '../ui/Modal'
 import { Input }  from '../ui/Input'
 import { Button } from '../ui/Button'
+import { Icon }   from '../../constants/icons'
 import { todayKey } from '../../utils/date'
 import s from './TaskModal.module.css'
 
+// ── SVG icons for categories ──────────────────────────────────────────────
+const CatIcon = {
+  study:    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
+  activity: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>,
+  sport:    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M3 9.5h2v5H3z"/><path d="M5 7h2v10H5z"/><path d="M17 7h2v10h-2z"/><path d="M19 9.5h2v5h-2z"/></svg>,
+  health:   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
+  work:     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
+  personal: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  leisure:  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>,
+  other:    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>,
+}
+
 const CATS = [
-  { id: 'study',    label: '📚 Estudo'  },
-  { id: 'activity', label: '⚡ Hábito'  },
-  { id: 'leisure',  label: '🔁 Revisão' },
+  { id: 'study',    label: 'Estudo'    },
+  { id: 'activity', label: 'Hábito'   },
+  { id: 'sport',    label: 'Esporte'  },
+  { id: 'health',   label: 'Saúde'    },
+  { id: 'work',     label: 'Trabalho' },
+  { id: 'personal', label: 'Pessoal'  },
+  { id: 'leisure',  label: 'Lazer'    },
+  { id: 'other',    label: 'Outros'   },
 ]
+
 const PRIORITIES = [
-  { id: 1, label: '🔴 Alta',  color: 'var(--red)'    },
-  { id: 2, label: '🟡 Média', color: 'var(--yellow)' },
-  { id: 3, label: '🟢 Baixa', color: 'var(--green)'  },
+  { id: 1, label: 'Alta',  color: 'var(--red)'    },
+  { id: 2, label: 'Média', color: 'var(--yellow)' },
+  { id: 3, label: 'Baixa', color: 'var(--green)'  },
 ]
+
 const FREQ_TYPES = [
   { id: 'none',          label: 'Único'           },
   { id: 'daily',         label: 'Diário'          },
@@ -23,49 +43,48 @@ const FREQ_TYPES = [
   { id: 'weekly',        label: 'Semanal'         },
   { id: 'monthly',       label: 'Mensal'          },
 ]
+
 const WEEKDAYS = [
   { id: 0, label: 'D' }, { id: 1, label: 'S' }, { id: 2, label: 'T' },
   { id: 3, label: 'Q' }, { id: 4, label: 'Q' }, { id: 5, label: 'S' }, { id: 6, label: 'S' },
 ]
+
 const REMINDER_OPTS = [
   { id: '15min', label: '15 min' }, { id: '30min', label: '30 min' },
   { id: '1h',    label: '1 hora'  }, { id: '2h',   label: '2 horas' },
   { id: '4h',    label: '4 horas' }, { id: '1d',   label: '1 dia'   },
 ]
-const ALERT_OPTS = [
-  { id: 'none',   label: 'Nenhum'         },
-  { id: 'notify', label: '🔔 Notificação' },
-  { id: 'alarm',  label: '⏰ Alarme'       },
-]
-const GOAL_UNITS = ['ml', 'l', 'km', 'm', 'páginas', 'capítulos', 'minutos', 'horas', 'repetições', 'copos', 'tarefas', 'exercícios', 'séries', 'unidades']
 
-// ── 20 Study Methods ─────────────────────────────────────────────────────
+const ALERT_OPTS = [
+  { id: 'none',   label: 'Nenhum'       },
+  { id: 'notify', label: 'Notificação'  },
+  { id: 'alarm',  label: 'Alarme'       },
+]
+
+const GOAL_UNITS = ['ml', 'l', 'km', 'm', 'páginas', 'capítulos', 'minutos', 'horas', 'repetições', 'copos', 'séries', 'unidades']
+
+// ── 20 Study Methods ──────────────────────────────────────────────────────
 const STUDY_METHODS = [
-  // Memorização & Recall
-  { id: 'active_recall',  label: '🧠 Active Recall',      desc: 'Teste-se sem olhar para as notas', group: 'Memorização' },
-  { id: 'spaced',         label: '📅 Repetição Espaçada',  desc: 'Revise em intervalos crescentes', group: 'Memorização' },
-  { id: 'flashcards',     label: '🃏 Flashcards',           desc: 'Cartões com perguntas e respostas', group: 'Memorização' },
-  { id: 'loci',           label: '🏛️ Palácio da Memória',   desc: 'Associe conceitos a locais mentais', group: 'Memorização' },
-  // Compreensão & Síntese
-  { id: 'feynman',        label: '🧑‍🏫 Técnica Feynman',     desc: 'Explique como se fosse a um leigo', group: 'Compreensão' },
-  { id: 'elaborative',    label: '🔗 Elaboração',            desc: 'Conecte ao que já sabe', group: 'Compreensão' },
-  { id: 'mind_map',       label: '🗺 Mapa Mental',           desc: 'Visualize conexões entre conceitos', group: 'Compreensão' },
-  { id: 'blurting',       label: '✍️ Blurting',              desc: 'Escreva tudo que lembrar do tema', group: 'Compreensão' },
-  { id: 'sq3r',           label: '📖 SQ3R',                  desc: 'Survey, Question, Read, Recite, Review', group: 'Compreensão' },
-  // Organização & Notas
-  { id: 'cornell',        label: '📝 Cornell Notes',         desc: 'Notas estruturadas em 3 colunas', group: 'Organização' },
-  { id: 'outline',        label: '📋 Método Outline',        desc: 'Hierarquia de tópicos e subtópicos', group: 'Organização' },
-  { id: 'boxing',         label: '📦 Método Boxing',         desc: 'Agrupe conceitos em caixas temáticas', group: 'Organização' },
-  // Concentração & Fluxo
-  { id: 'pomodoro',       label: '🍅 Pomodoro',              desc: '25 min foco + 5 min pausa', group: 'Concentração' },
-  { id: 'deep_work',      label: '🔒 Deep Work',             desc: 'Blocos de 90 min sem interrupção', group: 'Concentração' },
-  { id: 'time_blocking',  label: '⏱ Time Blocking',          desc: 'Reserve horários fixos para estudo', group: 'Concentração' },
-  // Prática & Aplicação
-  { id: 'interleaving',   label: '🔀 Interleaving',          desc: 'Alterne entre matérias diferentes', group: 'Prática' },
-  { id: 'dual_coding',    label: '🎨 Codificação Dupla',     desc: 'Combine texto + imagem/diagrama', group: 'Prática' },
-  { id: 'practice_test',  label: '📝 Provas Simuladas',      desc: 'Faça testes como se fosse uma prova real', group: 'Prática' },
-  { id: 'teach_back',     label: '👥 Ensine de Volta',        desc: 'Ensine o conteúdo para outra pessoa', group: 'Prática' },
-  { id: 'case_study',     label: '🔬 Estudo de Caso',        desc: 'Aplique teoria a situações reais', group: 'Prática' },
+  { id: 'active_recall',  label: 'Active Recall',     desc: 'Teste-se sem olhar para as notas',              group: 'Memorização' },
+  { id: 'spaced',         label: 'Repetição Espaçada', desc: 'Revise em intervalos crescentes',               group: 'Memorização' },
+  { id: 'flashcards',     label: 'Flashcards',          desc: 'Cartões com perguntas e respostas',             group: 'Memorização' },
+  { id: 'loci',           label: 'Palácio da Memória',  desc: 'Associe conceitos a locais mentais',           group: 'Memorização' },
+  { id: 'feynman',        label: 'Técnica Feynman',     desc: 'Explique como se fosse a um leigo',             group: 'Compreensão' },
+  { id: 'elaborative',    label: 'Elaboração',           desc: 'Conecte ao que já sabe',                       group: 'Compreensão' },
+  { id: 'mind_map',       label: 'Mapa Mental',          desc: 'Visualize conexões entre conceitos',           group: 'Compreensão' },
+  { id: 'blurting',       label: 'Blurting',             desc: 'Escreva tudo que lembrar do tema',             group: 'Compreensão' },
+  { id: 'sq3r',           label: 'SQ3R',                 desc: 'Survey, Question, Read, Recite, Review',       group: 'Compreensão' },
+  { id: 'cornell',        label: 'Cornell Notes',        desc: 'Notas estruturadas em 3 colunas',              group: 'Organização' },
+  { id: 'outline',        label: 'Método Outline',       desc: 'Hierarquia de tópicos e subtópicos',           group: 'Organização' },
+  { id: 'boxing',         label: 'Método Boxing',        desc: 'Agrupe conceitos em caixas temáticas',         group: 'Organização' },
+  { id: 'pomodoro',       label: 'Pomodoro',             desc: '25 min foco + 5 min pausa',                    group: 'Concentração' },
+  { id: 'deep_work',      label: 'Deep Work',            desc: 'Blocos de 90 min sem interrupção',             group: 'Concentração' },
+  { id: 'time_blocking',  label: 'Time Blocking',        desc: 'Reserve horários fixos para estudo',           group: 'Concentração' },
+  { id: 'interleaving',   label: 'Interleaving',         desc: 'Alterne entre matérias diferentes',            group: 'Prática' },
+  { id: 'dual_coding',    label: 'Codificação Dupla',    desc: 'Combine texto + imagem/diagrama',              group: 'Prática' },
+  { id: 'practice_test',  label: 'Provas Simuladas',     desc: 'Faça testes como se fosse uma prova real',     group: 'Prática' },
+  { id: 'teach_back',     label: 'Ensine de Volta',      desc: 'Ensine o conteúdo para outra pessoa',          group: 'Prática' },
+  { id: 'case_study',     label: 'Estudo de Caso',       desc: 'Aplique teoria a situações reais',             group: 'Prática' },
 ]
 
 const METHOD_GROUPS = ['Memorização', 'Compreensão', 'Organização', 'Concentração', 'Prática']
@@ -139,14 +158,15 @@ export function TaskModal({ open, onClose, onSave, defaultDate }) {
   }
 
   const TABS = [
-    { id: 'basic',  label: '📋 Básico'    },
-    { id: 'repeat', label: '🔁 Repetição' },
-    { id: 'goal',   label: '🎯 Meta'      },
-    { id: 'method', label: '📚 Método'    },
+    { id: 'basic',  label: 'Básico'    },
+    { id: 'repeat', label: 'Repetição' },
+    { id: 'goal',   label: 'Meta'      },
+    { id: 'method', label: 'Método'    },
   ]
 
   return (
-    <Modal open={open} onClose={onClose} title="Nova Tarefa">
+    <Modal open={open} onClose={onClose} title="Nova Tarefa" maxWidth={500}>
+      {/* Tab bar — fixed, doesn't scroll */}
       <div className={s.tabs}>
         {TABS.map(t => (
           <button key={t.id} type="button"
@@ -167,11 +187,14 @@ export function TaskModal({ open, onClose, onSave, defaultDate }) {
 
           <div>
             <div className={s.label}>Categoria</div>
-            <div className={s.chipRow}>
+            <div className={s.catGrid}>
               {CATS.map(c => (
                 <button key={c.id} type="button"
-                  className={[s.chip, form.cat === c.id ? s.chipActive : ''].join(' ')}
-                  onClick={() => set('cat', c.id)}>{c.label}</button>
+                  className={[s.catBtn, form.cat === c.id ? s.catActive : ''].join(' ')}
+                  onClick={() => set('cat', c.id)}>
+                  <span className={[s.catIcon, s[`cat-${c.id}`]].join(' ')}>{CatIcon[c.id]}</span>
+                  {c.label}
+                </button>
               ))}
             </div>
           </div>
@@ -183,7 +206,10 @@ export function TaskModal({ open, onClose, onSave, defaultDate }) {
                 <button key={p.id} type="button"
                   className={[s.chip, form.priority === p.id ? s.chipActive : ''].join(' ')}
                   style={form.priority === p.id ? { borderColor: p.color, color: p.color, background: `${p.color}18` } : {}}
-                  onClick={() => set('priority', p.id)}>{p.label}</button>
+                  onClick={() => set('priority', p.id)}>
+                  <span className={s.priorityDot} style={{ background: p.color }} />
+                  {p.label}
+                </button>
               ))}
             </div>
           </div>
@@ -199,18 +225,22 @@ export function TaskModal({ open, onClose, onSave, defaultDate }) {
           {/* Tags */}
           <div>
             <div className={s.label}>Tags</div>
-            <div className={s.tagList}>
-              {form.tags.map(t => (
-                <span key={t} className={s.tagChip}>#{t}
-                  <button type="button" className={s.tagDel} onClick={() => set('tags', form.tags.filter(x => x !== t))}>×</button>
-                </span>
-              ))}
-            </div>
+            {form.tags.length > 0 && (
+              <div className={s.tagList}>
+                {form.tags.map(t => (
+                  <span key={t} className={s.tagChip}>#{t}
+                    <button type="button" className={s.tagDel} onClick={() => set('tags', form.tags.filter(x => x !== t))}>×</button>
+                  </span>
+                ))}
+              </div>
+            )}
             <div className={s.subInput}>
-              <input className={s.subInputField} placeholder="Adicionar tag... (Enter)"
+              <input className={s.subInputField} placeholder="Adicionar tag..."
                 value={newTag} onChange={e => setNewTag(e.target.value)}
                 onKeyDown={e => { if(e.key==='Enter'){e.preventDefault();addTag()} }} />
-              <button type="button" className={s.subAddBtn} onClick={addTag}>+</button>
+              <button type="button" className={s.subAddBtn} onClick={addTag}>
+                <Icon.Plus width={14} height={14} />
+              </button>
             </div>
           </div>
 
@@ -219,22 +249,27 @@ export function TaskModal({ open, onClose, onSave, defaultDate }) {
             <div className={s.label}>Subtarefas</div>
             {form.subtasks.map((sub, i) => (
               <div key={sub.id} className={s.subRow}>
+                <Icon.List width={11} height={11} style={{ color: 'var(--text-3)', flexShrink: 0 }} />
                 <span className={s.subText}>{sub.text}</span>
                 <button type="button" className={s.subDel}
-                  onClick={() => set('subtasks', form.subtasks.filter((_,j)=>j!==i))}>✕</button>
+                  onClick={() => set('subtasks', form.subtasks.filter((_,j)=>j!==i))}>
+                  <Icon.X width={11} height={11} />
+                </button>
               </div>
             ))}
             <div className={s.subInput}>
               <input className={s.subInputField} placeholder="Adicionar subtarefa..." value={newSub}
                 onChange={e => setNewSub(e.target.value)}
                 onKeyDown={e => { if(e.key==='Enter'){e.preventDefault();addSub()} }} />
-              <button type="button" className={s.subAddBtn} onClick={addSub}>+</button>
+              <button type="button" className={s.subAddBtn} onClick={addSub}>
+                <Icon.Plus width={14} height={14} />
+              </button>
             </div>
           </div>
 
           <div>
-            <div className={s.label}>Descrição / Notas (opcional)</div>
-            <textarea className={s.textarea} placeholder="Notas detalhadas, links, referências, contexto..."
+            <div className={s.label}>Descrição / Notas</div>
+            <textarea className={s.textarea} placeholder="Notas, links, referências..."
               value={form.desc} onChange={e => set('desc', e.target.value)} rows={3} />
           </div>
         </div>
@@ -297,7 +332,7 @@ export function TaskModal({ open, onClose, onSave, defaultDate }) {
 
           {form.alert !== 'none' && (
             <div>
-              <div className={s.label}>Lembretes múltiplos</div>
+              <div className={s.label}>Lembretes</div>
               <div className={s.chipRow}>
                 {REMINDER_OPTS.map(r => (
                   <button key={r.id} type="button"
@@ -308,7 +343,7 @@ export function TaskModal({ open, onClose, onSave, defaultDate }) {
               </div>
               {form.reminders.length > 0 && (
                 <div className={s.reminderList}>
-                  🔔 Selecionados: {form.reminders.map(r => REMINDER_OPTS.find(o=>o.id===r)?.label).join(', ')}
+                  Selecionados: {form.reminders.map(r => REMINDER_OPTS.find(o=>o.id===r)?.label).join(', ')}
                 </div>
               )}
             </div>
@@ -320,10 +355,10 @@ export function TaskModal({ open, onClose, onSave, defaultDate }) {
       {tab === 'goal' && (
         <div className={s.tabContent}>
           <div className={s.goalInfo}>
-            <div className={s.goalInfoIcon}>🎯</div>
+            <Icon.Target width={18} height={18} style={{ color: 'var(--accent)', flexShrink: 0 }} />
             <div>
               <div className={s.goalInfoTitle}>Metas quantitativas</div>
-              <div className={s.goalInfoDesc}>Defina uma meta numérica. Ex: "Beber 8 copos", "Ler 50 páginas", "Correr 5 km".</div>
+              <div className={s.goalInfoDesc}>Ex: "Beber 8 copos", "Ler 50 páginas", "Correr 5 km".</div>
             </div>
           </div>
 
@@ -355,7 +390,7 @@ export function TaskModal({ open, onClose, onSave, defaultDate }) {
               </div>
 
               <div>
-                <div className={s.label}>Incremento por clique (+Step)</div>
+                <div className={s.label}>Incremento por clique</div>
                 <div className={s.intervalRow}>
                   <button type="button" className={s.intervalBtn}
                     onClick={() => set('goalStep', Math.max(1, (parseInt(form.goalStep)||1) - 1))}>−</button>
@@ -365,32 +400,22 @@ export function TaskModal({ open, onClose, onSave, defaultDate }) {
                   {form.goalUnit && <span className={s.intervalUnit}>{form.goalUnit}</span>}
                 </div>
               </div>
-
-              <div className={s.goalPreview}>
-                <div className={s.goalPreviewBar}>
-                  <div className={s.goalPreviewFill} style={{ width: '0%' }} />
-                </div>
-                <span>0 / {form.goalValue}{form.goalUnit ? ` ${form.goalUnit}` : ''}</span>
-                <span className={s.goalXP}>+20 XP ao completar</span>
-              </div>
             </>
           )}
 
-          {form.goalValue === 0 && (
-            <div className={s.xpNote}>
-              <span>⚡</span>
-              <span>Tarefas normais dão <strong>10 XP</strong>. Tarefas com meta dão <strong>20 XP</strong>.</span>
-            </div>
-          )}
+          <div className={s.xpNote}>
+            <Icon.Zap width={13} height={13} style={{ color: 'var(--accent)' }} />
+            <span>Tarefas normais: <strong>10 XP</strong>. Com meta: <strong>20 XP</strong>.</span>
+          </div>
         </div>
       )}
 
       {/* ── MÉTODO DE ESTUDO ── */}
       {tab === 'method' && (
         <div className={s.tabContent}>
-          <div className={s.methodInfo}>
-            Escolha uma técnica científica para esta sessão. O método fica registado na tarefa.
-          </div>
+          <p className={s.methodInfo}>
+            Escolha uma técnica científica para esta sessão. Fica registado na tarefa.
+          </p>
           {METHOD_GROUPS.map(group => (
             <div key={group}>
               <div className={s.methodGroup}>{group}</div>

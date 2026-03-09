@@ -53,10 +53,10 @@ function TaskRow({ t, toggleTask, deleteTask, onStartFocus, updateTaskValue, upd
 
         <div className={s.metaRow}>
           <span className={s.metaDate}>{t.date}{t.time && t.time !== '—' ? ` · ${t.time}` : ''}</span>
-          {t.studyMethod && <span className={s.methodBadge}>📚 {t.studyMethod}</span>}
-          {t.frequencyType && t.frequencyType !== 'none' && <span className={s.badge}>🔁</span>}
-          {t.alert && t.alert !== 'none' && <span className={s.badge}>{t.alert === 'alarm' ? '⏰' : '🔔'}</span>}
-          {t.reminders && t.reminders.length > 1 && <span className={s.badge}>🔔×{t.reminders.length}</span>}
+          {t.studyMethod && <span className={s.methodBadge}><svg width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round'><path d='M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z'/><path d='M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z'/></svg> {t.studyMethod}</span>}
+          {t.frequencyType && t.frequencyType !== 'none' && <span className={s.badge} title='Recorrente'><svg width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round'><polyline points='23 4 23 10 17 10'/><polyline points='1 20 1 14 7 14'/><path d='M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15'/></svg></span>}
+          {t.alert && t.alert !== 'none' && <span className={s.badge}><svg width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round'><path d='M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9'/><path d='M13.73 21a2 2 0 0 1-3.46 0'/></svg></span>}
+          {t.reminders && t.reminders.length > 1 && <span className={s.badge}>{t.reminders.length}×</span>}
         </div>
 
         {/* Quantitative progress */}
@@ -79,11 +79,11 @@ function TaskRow({ t, toggleTask, deleteTask, onStartFocus, updateTaskValue, upd
           {CATEGORIES[t.cat]?.label || t.cat}
         </span>
         {onStartFocus && !t.done && (
-          <button className={s.focusBtn} title="Iniciar foco" onClick={e => { e.stopPropagation(); onStartFocus(t) }}>▶</button>
+          <button className={s.focusBtn} title="Iniciar foco" onClick={e => { e.stopPropagation(); onStartFocus(t) }}><svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>
         )}
         {hasDetails && (
           <button className={s.expandBtn} onClick={e => { e.stopPropagation(); setExpanded(v => !v) }}>
-            {expanded ? '▲' : '▼'}
+            {expanded ? <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="18 15 12 9 6 15"/></svg> : <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>}
           </button>
         )}
         <button className={s.del} onClick={e => { e.stopPropagation(); deleteTask(t.id) }}>

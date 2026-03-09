@@ -1,11 +1,14 @@
 .overlay {
   position: fixed; inset: 0; z-index: var(--z-modal);
-  background: rgba(0,0,0,0.55);
-  backdrop-filter: blur(5px);
-  display: flex; align-items: center; justify-content: center;
-  padding: 20px;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 24px 16px;
   animation: fadeIn var(--duration-base) ease-out;
+  overflow-y: auto;
 }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
 .modal {
   width: 100%;
   background: var(--surface);
@@ -13,12 +16,21 @@
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl);
   animation: modalIn var(--duration-slow) var(--ease-out);
+  display: flex; flex-direction: column;
+  max-height: calc(100dvh - 48px);
   overflow: hidden;
+  position: relative;
+  margin: auto;
 }
+@keyframes modalIn { from{opacity:0;transform:translateY(14px) scale(.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+
 .header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 18px 20px 16px;
+  padding: 16px 20px 14px;
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  position: sticky; top: 0; z-index: 2;
+  background: var(--surface);
 }
 .title { font-size: 15px; font-weight: 600; letter-spacing: -0.02em; color: var(--text); }
 .close {
@@ -26,6 +38,18 @@
   border: none; background: transparent; cursor: pointer;
   color: var(--text-3); display: flex; align-items: center; justify-content: center;
   transition: background var(--duration-fast), color var(--duration-fast);
+  flex-shrink: 0;
 }
 .close:hover { background: var(--surface-2); color: var(--text); }
-.body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+
+.body {
+  padding: 0 20px 20px;
+  display: flex; flex-direction: column; gap: 0;
+  overflow-y: auto;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-2) transparent;
+}
+.body::-webkit-scrollbar { width: 5px; }
+.body::-webkit-scrollbar-track { background: transparent; }
+.body::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 99px; }

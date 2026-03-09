@@ -13,11 +13,11 @@ import s from './App.module.css'
 function Splash() {
   return (
     <div className={s.splash}>
-      <div className={s.splashIcon}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-        </svg>
+      <div className={s.splashLogo}>
+        <img src="/logo.svg" alt="HabitLife" width={40} height={40} style={{ objectFit: 'contain', display: 'block' }} />
       </div>
+      <div className={s.splashName}>HabitLife</div>
+      <div className={s.splashSub}>Evolução</div>
       <div className={s.splashSpinner} />
     </div>
   )
@@ -39,10 +39,12 @@ export default function App() {
 
   if (auth.user) {
     const taskActions = {
-      addTask:    tasks.addTask,
-      toggleTask: tasks.toggleTask,
-      deleteTask: tasks.deleteTask,
-      clearAll:   tasks.clearAll,
+      addTask:         tasks.addTask,
+      toggleTask:      tasks.toggleTask,
+      deleteTask:      tasks.deleteTask,
+      clearAll:        tasks.clearAll,
+      updateTaskValue: tasks.updateTaskValue,
+      updateSubtasks:  tasks.updateSubtasks,
     }
     return (
       <AppShell

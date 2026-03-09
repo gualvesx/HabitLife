@@ -4,7 +4,7 @@ import { Button } from '../components/ui/Button'
 import { CATEGORIES, WEEKDAYS_SHORT } from '../constants'
 import { todayKey, dateKey } from '../utils/date'
 import {
-  getLevelFromXP, getXPData, addCoins, addFreezes, updateBestStreak,
+  getLevelFromXP, getXPData, addFreezes, updateBestStreak,
   getBadges, ALL_BADGES, checkAndAwardBadges, getFocusLog, requestNotifPermission
 } from '../hooks/useTasks'
 import s from './DashboardPage.module.css'
@@ -97,7 +97,7 @@ function BadgeToast({ badges, onDismiss }) {
     <div className={s.badgeToast}>
       {badges.map(b => (
         <div key={b.id} className={s.badgeToastItem}>
-          <span className={s.badgeToastIcon}>🏆</span>
+          <span className={s.badgeToastIcon}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg></span>
           <div>
             <div className={s.badgeToastTitle}>Conquista desbloqueada!</div>
             <div className={s.badgeToastName}>{b.label}</div>
@@ -109,44 +109,6 @@ function BadgeToast({ badges, onDismiss }) {
   )
 }
 
-// ── Shop modal ────────────────────────────────────────────────────────────
-const SHOP_ITEMS = [
-  { id: 'freeze',  label: '❄️ Congelar Streak',   desc: 'Proteja seu streak por 1 dia',    cost: 3,  type: 'freeze' },
-  { id: 'freeze5', label: '❄️×5 Pacote de Gelos',  desc: 'Proteja seu streak por 5 dias',   cost: 12, type: 'freeze5' },
-  { id: 'xp2x',   label: '⚡ XP Duplo (1h)',       desc: 'Dobra XP por 1 hora',             cost: 8,  type: 'xp2x' },
-  { id: 'hint',   label: '💡 Dica de Método',      desc: 'Receba uma dica de estudo',        cost: 1,  type: 'hint' },
-]
-
-function ShopModal({ coins, onBuy, onClose }) {
-  return (
-    <div className={s.shopOverlay} onClick={onClose}>
-      <div className={s.shopModal} onClick={e => e.stopPropagation()}>
-        <div className={s.shopHeader}>
-          <div className={s.shopTitle}>🏪 Loja de Evolução</div>
-          <div className={s.shopCoins}>🪙 {coins} moedas</div>
-          <button className={s.shopClose} onClick={onClose}>✕</button>
-        </div>
-        <div className={s.shopGrid}>
-          {SHOP_ITEMS.map(item => (
-            <div key={item.id} className={[s.shopItem, coins < item.cost ? s.shopItemDisabled : ''].join(' ')}>
-              <div className={s.shopItemIcon}>{item.label.split(' ')[0]}</div>
-              <div className={s.shopItemInfo}>
-                <div className={s.shopItemName}>{item.label}</div>
-                <div className={s.shopItemDesc}>{item.desc}</div>
-              </div>
-              <button className={s.shopBuyBtn}
-                disabled={coins < item.cost}
-                onClick={() => onBuy(item)}>
-                🪙 {item.cost}
-              </button>
-            </div>
-          ))}
-        </div>
-        <p className={s.shopNote}>💡 Ganhe moedas completando tarefas (+1 normal, +2 com meta)</p>
-      </div>
-    </div>
-  )
-}
 
 const PRIORITY_COLORS = { 1: 'var(--red)', 2: 'var(--yellow)', 3: 'var(--green)' }
 
@@ -170,7 +132,6 @@ export function DashboardPage({ tasks, toggleTask, openModal, onStartFocus, upda
   }
 
   const [xpData,    setXpData]    = useState(getXPData)
-  const [shopOpen,  setShopOpen]  = useState(false)
   const [newBadges, setNewBadges] = useState([])
   const [notifPerm, setNotifPerm] = useState(Notification?.permission || 'default')
 
@@ -207,16 +168,6 @@ export function DashboardPage({ tasks, toggleTask, openModal, onStartFocus, upda
     checkBadges()
   }, [streak, checkBadges])
 
-  const handleBuy = (item) => {
-    const cur = getXPData()
-    if (cur.coins < item.cost) return
-    addCoins(-item.cost)
-    if (item.type === 'freeze')  addFreezes(1)
-    if (item.type === 'freeze5') addFreezes(5)
-    setXpData(getXPData())
-    setShopOpen(false)
-  }
-
   const handleRequestNotif = async () => {
     const p = await requestNotifPermission()
     setNotifPerm(p)
@@ -240,14 +191,13 @@ export function DashboardPage({ tasks, toggleTask, openModal, onStartFocus, upda
     <div className={s.page}>
       {/* Badge toast */}
       {newBadges.length > 0 && <BadgeToast badges={newBadges} onDismiss={() => setNewBadges([])} />}
-      {shopOpen && <ShopModal coins={xpData.coins} onBuy={handleBuy} onClose={() => setShopOpen(false)} />}
 
       {/* Notification permission prompt */}
       {notifPerm === 'default' && (
         <div className={s.notifBanner}>
-          <span>🔔 Ative notificações para receber lembretes das suas tarefas</span>
+          <span>Ative notificações para receber lembretes das suas tarefas</span>
           <button onClick={handleRequestNotif}>Ativar</button>
-          <button className={s.notifDismiss} onClick={() => setNotifPerm('dismissed')}>✕</button>
+          <button className={s.notifDismiss} onClick={() => setNotifPerm('dismissed')}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
       )}
 
@@ -274,9 +224,8 @@ export function DashboardPage({ tasks, toggleTask, openModal, onStartFocus, upda
         <StatCard
           icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>}
           iconBg="var(--blue-soft)" iconColor="var(--blue)"
-          value={`${xpData.coins}🪙`} label="Moedas"
-          trend="Abrir loja" trendUp={xpData.coins > 0}
-          sub={<button className={s.shopTrigger} onClick={() => setShopOpen(true)}>🏪 Loja</button>}
+          value={tasks.filter(t => t.done).length} label="Total concluídas"
+          trend={`${tasks.length} criadas`} trendUp
         />
       </div>
 
@@ -329,15 +278,15 @@ export function DashboardPage({ tasks, toggleTask, openModal, onStartFocus, upda
                       )}
                     </div>
                     <div className={s.taskMeta}>
-                      {t.frequencyType && t.frequencyType !== 'none' && <span className={s.badge}>🔁</span>}
-                      {t.alert && t.alert !== 'none' && <span className={s.badge}>{t.alert === 'alarm' ? '⏰' : '🔔'}</span>}
+                      {t.frequencyType && t.frequencyType !== 'none' && <span className={s.badge} title="Recorrente"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span>}
+                      {t.alert && t.alert !== 'none' && <span className={s.badge} title={t.alert === 'alarm' ? 'Alarme' : 'Notificação'}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>}
                       <span className={[s.tag, s[CATEGORIES[t.cat]?.cls || 'cat-study']].join(' ')}>
                         {CATEGORIES[t.cat]?.label || t.cat}
                       </span>
                       {onStartFocus && !t.done && (
                         <button className={s.focusBtn} title="Iniciar foco"
                           onClick={e => { e.stopPropagation(); onStartFocus(t) }}>
-                          ▶
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                         </button>
                       )}
                     </div>
@@ -358,16 +307,17 @@ export function DashboardPage({ tasks, toggleTask, openModal, onStartFocus, upda
               </div>
               <div>
                 <div className={s.streakVal}>{streak} dia{streak !== 1 ? 's' : ''}</div>
-                <div className={s.streakSub}>Recorde: {xpData.bestStreak} dias 🏆</div>
+                <div className={s.streakSub}>Recorde: {xpData.bestStreak} dias</div>
               </div>
               <button className={[s.freezeBtn, xpData.freezes < 1 ? s.freezeDisabled : ''].join(' ')}
                 onClick={() => {
                   if (xpData.freezes < 1) return
                   addFreezes(-1); setXpData(getXPData())
-                  alert('❄️ Streak congelado! Você usou 1 congelamento.')
+                  alert('Streak congelado! Você usou 1 congelamento.')
                 }}
-                title={xpData.freezes < 1 ? `Sem congelamentos (compre na loja 🏪)` : `${xpData.freezes} congelamentos disponíveis`}>
-                ❄️ {xpData.freezes > 0 ? `×${xpData.freezes}` : ''}
+                title={xpData.freezes < 1 ? 'Sem congelamentos disponíveis' : `${xpData.freezes} congelamentos disponíveis`}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 7l-5-5-5 5"/><path d="M17 17l-5 5-5-5"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M7 7l-5 5 5 5"/><path d="M17 7l5 5-5 5"/></svg>
+                {xpData.freezes > 0 ? `×${xpData.freezes}` : ''}
               </button>
             </div>
             <div className={s.weekLabel}>Esta semana</div>
@@ -412,7 +362,7 @@ export function DashboardPage({ tasks, toggleTask, openModal, onStartFocus, upda
 
           {/* Badges / Conquistas */}
           <Card>
-            <CardHeader title="🏆 Conquistas" badge={`${earnedBadges.length}/${ALL_BADGES.length}`} />
+            <CardHeader title="Conquistas" badge={`${earnedBadges.length}/${ALL_BADGES.length}`} />
             <div className={s.badgeGrid}>
               {ALL_BADGES.map(b => {
                 const earned = earnedBadges.includes(b.id)
@@ -420,7 +370,7 @@ export function DashboardPage({ tasks, toggleTask, openModal, onStartFocus, upda
                   <div key={b.id} className={[s.badgeItem, earned ? s.badgeEarned : ''].join(' ')} title={b.desc}>
                     <span className={s.badgeEmoji}>{b.label.split(' ')[0]}</span>
                     <span className={s.badgeName}>{b.label.split(' ').slice(1).join(' ')}</span>
-                    {earned && <div className={s.badgeCheck}>✓</div>}
+                    {earned && <div className={s.badgeCheck}><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>}
                   </div>
                 )
               })}
