@@ -43,7 +43,7 @@ export function Brain3D({ className, style }) {
         // Dynamic import of three jsm loader
         const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js')
         const gltf = await new Promise((res, rej) =>
-          new GLTFLoader().load('https://drive.google.com/file/d/1IvoLR2CEsmqqTVgQLKB9OIyyeBtRFB60/view?usp=sharing', res, null, rej)
+          new GLTFLoader().load('/amethyst_cortex.glb', res, null, rej)
         )
         model = gltf.scene
 
