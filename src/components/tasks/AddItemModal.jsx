@@ -8,13 +8,13 @@ import s from './AddItemModal.module.css'
 
 const CATS = [
   { id: 'study',    label: 'Estudo'   },
-  { id: 'activity', label: 'Hábito'  },
-  { id: 'sport',    label: 'Esporte' },
+  { id: 'activity', label: 'Esporte' },
+  { id: 'leisure',  label: 'Lazer'   },
   { id: 'health',   label: 'Saúde'   },
   { id: 'work',     label: 'Trabalho'},
-  { id: 'personal', label: 'Pessoal' },
-  { id: 'leisure',  label: 'Lazer'   },
-  { id: 'other',    label: 'Outros'  },
+  { id: 'finance',  label: 'Finanças'},
+  { id: 'social',   label: 'Social'  },
+  { id: 'general',  label: 'Geral'   },
 ]
 
 const WEEKDAYS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb']

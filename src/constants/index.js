@@ -8,13 +8,13 @@ export const WEEKDAYS_LONG  = ['Domingo','Segunda','Terça','Quarta','Quinta','S
 
 export const CATEGORIES = {
   study:    { label: 'Estudo',    color: 'blue',   cls: 'cat-study'    },
-  activity: { label: 'Hábito',   color: 'orange', cls: 'cat-activity' },
-  sport:    { label: 'Esporte',  color: 'green',  cls: 'cat-sport'    },
+  activity: { label: 'Esporte',  color: 'green',  cls: 'cat-activity' },
+  leisure:  { label: 'Lazer',    color: 'teal',   cls: 'cat-leisure'  },
   health:   { label: 'Saúde',    color: 'red',    cls: 'cat-health'   },
   work:     { label: 'Trabalho', color: 'yellow', cls: 'cat-work'     },
-  personal: { label: 'Pessoal',  color: 'purple', cls: 'cat-personal' },
-  leisure:  { label: 'Lazer',    color: 'teal',   cls: 'cat-leisure'  },
-  other:    { label: 'Outros',   color: 'gray',   cls: 'cat-other'    },
+  finance:  { label: 'Finanças', color: 'orange', cls: 'cat-finance'  },
+  social:   { label: 'Social',   color: 'purple', cls: 'cat-social'   },
+  general:  { label: 'Geral',    color: 'gray',   cls: 'cat-general'  },
 }
 
 export const NOTIF_TYPES = {

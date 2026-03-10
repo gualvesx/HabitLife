@@ -206,10 +206,14 @@ a { color: inherit; text-decoration: none; }
 
 /* ── Category color dots (shared across pages) ───────────────────── */
 .cat-study    { background: var(--blue); }
-.cat-activity { background: var(--orange); }
-.cat-sport    { background: #22c55e; }
+.cat-activity { background: #22c55e; }
+.cat-leisure  { background: #14b8a6; }
 .cat-health   { background: var(--red); }
 .cat-work     { background: var(--yellow); }
+.cat-finance  { background: var(--orange); }
+.cat-social   { background: var(--accent); }
+.cat-general  { background: var(--text-3); }
+/* legacy aliases — keeps old tasks from breaking visually */
+.cat-sport    { background: #22c55e; }
 .cat-personal { background: var(--accent); }
-.cat-leisure  { background: #14b8a6; }
 .cat-other    { background: var(--text-3); }
