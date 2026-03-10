@@ -381,3 +381,20 @@
 .cat-personal { background: rgba(109,40,217,.15);  color: #9b72f8; }
 .cat-leisure  { background: rgba(20,184,166,.15);  color: #14b8a6; }
 .cat-other    { background: rgba(113,113,122,.15); color: #a1a1aa; }
+
+.editBtn, .delBtn {
+  flex-shrink: 0;
+  width: 24px; height: 24px; border-radius: 6px;
+  border: none; background: transparent; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity .15s, background .15s, color .15s;
+}
+.taskRow:hover .editBtn,
+.taskRow:hover .delBtn { opacity: 1; }
+.editBtn { color: var(--text-3); }
+.editBtn:hover { background: var(--surface-3); color: var(--accent); }
+.delBtn  { color: var(--text-3); }
+.delBtn:hover  { background: var(--surface-3); color: var(--red); }
+@media (max-width: 600px) {
+  .editBtn, .delBtn { opacity: 1; }
+}

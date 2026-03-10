@@ -10,11 +10,63 @@ const fromDB = row => ({
   read:    row.is_read,
 })
 
+// ── Local alert: sound + vibration based on user prefs ───────────────────
+const playAlert = (prefs = {}) => {
+  if (prefs.sound !== false) {
+    // Use Web Audio API to generate a gentle chime — no audio file needed
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)()
+      const notes = [523.25, 659.25, 783.99] // C5, E5, G5
+      notes.forEach((freq, i) => {
+        const osc  = ctx.createOscillator()
+        const gain = ctx.createGain()
+        osc.connect(gain); gain.connect(ctx.destination)
+        osc.type = 'sine'
+        osc.frequency.value = freq
+        gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.12)
+        gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + i * 0.12 + 0.05)
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.35)
+        osc.start(ctx.currentTime + i * 0.12)
+        osc.stop(ctx.currentTime + i * 0.12 + 0.4)
+      })
+    } catch {}
+  }
+  if (prefs.vibr !== false && 'vibrate' in navigator) {
+    navigator.vibrate([200, 100, 200])
+  }
+}
+
+// ── Show system notification (works even with app open) ──────────────────
+const showSystemNotif = (title, message, url = '/') => {
+  if (!('Notification' in window)) return
+  if (Notification.permission !== 'granted') return
+
+  // Use SW registration if available (better on mobile)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(reg => {
+      reg.showNotification(title, {
+        body:     message,
+        icon:     '/logo.svg',
+        badge:    '/logo.svg',
+        vibrate:  [200, 100, 200],
+        tag:      'habitlife-notif',
+        renotify: true,
+        data:     { url },
+      })
+    }).catch(() => {
+      // Fallback to basic Notification API
+      new Notification(title, { body: message, icon: '/logo.svg' })
+    })
+  } else {
+    new Notification(title, { body: message, icon: '/logo.svg' })
+  }
+}
+
 export function useNotifs(userId) {
   const [notifs,  setNotifs]  = useState([])
   const channelRef = useRef(null)
 
-  // ── Fetch ─────────────────────────────────────────────────────────────────
+  // ── Fetch ───────────────────────────────────────────────────────────────
   const fetchNotifs = useCallback(async () => {
     if (!userId) return
     const { data, error } = await supabase
@@ -27,7 +79,7 @@ export function useNotifs(userId) {
     if (!error && data) setNotifs(data.map(fromDB))
   }, [userId])
 
-  // ── Realtime ──────────────────────────────────────────────────────────────
+  // ── Realtime ─────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!userId) { setNotifs([]); return }
 
@@ -40,7 +92,16 @@ export function useNotifs(userId) {
         { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
         payload => {
           if (payload.eventType === 'INSERT') {
-            setNotifs(prev => [fromDB(payload.new), ...prev])
+            const newNotif = fromDB(payload.new)
+            setNotifs(prev => [newNotif, ...prev])
+
+            // Sound + vibration
+            const prefs = (() => { try { return JSON.parse(localStorage.getItem('hl_prefs') || '{}') } catch { return {} } })()
+            playAlert(prefs)
+
+            // System notification (shows even when app is in background)
+            showSystemNotif(newNotif.title, newNotif.message)
+
           } else if (payload.eventType === 'UPDATE') {
             setNotifs(prev => prev.map(n => n.id === payload.new.id ? fromDB(payload.new) : n))
           } else if (payload.eventType === 'DELETE') {
@@ -54,7 +115,7 @@ export function useNotifs(userId) {
     return () => { supabase.removeChannel(channel) }
   }, [userId, fetchNotifs])
 
-  // ── Actions ───────────────────────────────────────────────────────────────
+  // ── Actions ──────────────────────────────────────────────────────────────
   const add = useCallback(async ({ type, title, message }) => {
     if (!userId) return
     await supabase.from('notifications').insert({
@@ -63,41 +124,31 @@ export function useNotifs(userId) {
       title,
       message: message || '',
     })
-    // Realtime will update state
   }, [userId])
 
   const markRead = useCallback(async id => {
     await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .eq('id', id)
-      .eq('user_id', userId)
+      .from('notifications').update({ is_read: true })
+      .eq('id', id).eq('user_id', userId)
     setNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))
   }, [userId])
 
   const markAllRead = useCallback(async () => {
     await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .eq('user_id', userId)
-      .eq('is_read', false)
+      .from('notifications').update({ is_read: true })
+      .eq('user_id', userId).eq('is_read', false)
     setNotifs(prev => prev.map(n => ({ ...n, read: true })))
   }, [userId])
 
   const remove = useCallback(async id => {
     await supabase
-      .from('notifications')
-      .delete()
-      .eq('id', id)
-      .eq('user_id', userId)
+      .from('notifications').delete()
+      .eq('id', id).eq('user_id', userId)
     setNotifs(prev => prev.filter(n => n.id !== id))
   }, [userId])
 
   const clear = useCallback(async () => {
-    await supabase
-      .from('notifications')
-      .delete()
-      .eq('user_id', userId)
+    await supabase.from('notifications').delete().eq('user_id', userId)
     setNotifs([])
   }, [userId])
 

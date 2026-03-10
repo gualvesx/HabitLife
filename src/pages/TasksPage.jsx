@@ -87,7 +87,7 @@ function SubtaskList({ task, onUpdateSubtasks }) {
   )
 }
 
-function TaskRow({ t, toggleTask, deleteTask, onStartFocus, updateTaskValue, updateSubtasks }) {
+function TaskRow({ t, toggleTask, deleteTask, openEditModal, onStartFocus, updateTaskValue, updateSubtasks }) {
   const { handleMove } = useGlowCard()
   const [expanded, setExpanded] = useState(false)
 
@@ -145,6 +145,11 @@ function TaskRow({ t, toggleTask, deleteTask, onStartFocus, updateTaskValue, upd
             {expanded ? <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="18 15 12 9 6 15"/></svg> : <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>}
           </button>
         )}
+        {openEditModal && (
+          <button className={s.editBtn} title="Editar" onClick={e => { e.stopPropagation(); openEditModal(t) }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+        )}
         <button className={s.del} onClick={e => { e.stopPropagation(); deleteTask(t.id) }}>
           <Icon.Trash width={13} height={13} />
         </button>
@@ -171,7 +176,7 @@ const FILTER_OPTS = [
 
 const PROJECT_COLORS = ['#6d28d9','#0284c7','#059669','#d97706','#dc2626','#7c3aed']
 
-export function TasksPage({ tasks, toggleTask, deleteTask, openModal, onStartFocus, updateTaskValue, updateSubtasks }) {
+export function TasksPage({ tasks, toggleTask, deleteTask, updateTask, openModal, openEditModal, onStartFocus, updateTaskValue, updateSubtasks }) {
   const todayStr = new Date().toISOString().slice(0, 10)
   const [selectedDate, setSelectedDate] = useState(todayStr)
   const [filter,  setFilter]  = useState('all')
@@ -188,14 +193,34 @@ export function TasksPage({ tasks, toggleTask, deleteTask, openModal, onStartFoc
       if (project && t.project !== project) return false
       // Date strip filter — always filter by selected date unless a status filter is active
       if (filter === 'all') {
-        // daily_until_done: show on every day from start date until completed
-        if (t.frequencyType === 'daily_until_done') {
-          if (t.date > selectedDate) return false  // not started yet
-          if (t.done && t.date !== selectedDate) return false  // done, only show on its own date
+        const ft = t.frequencyType
+        const d  = new Date(selectedDate + 'T12:00:00')
+
+        if (ft === 'daily') return true
+
+        if (ft === 'specific_days') {
+          if (!t.frequencyDays?.length) return true
+          return t.frequencyDays.map(Number).includes(d.getDay())
+        }
+
+        if (ft === 'weekly') {
+          // Show on the same weekday as the task's start date
+          const start = new Date(t.date + 'T12:00:00')
+          return d.getDay() === start.getDay()
+        }
+
+        if (ft === 'monthly') {
+          // Show on the same day-of-month as the task's start date
+          const start = new Date(t.date + 'T12:00:00')
+          return d.getDate() === start.getDate()
+        }
+
+        if (ft === 'daily_until_done') {
+          if (t.date > selectedDate) return false
           return true
         }
-        // daily habits: show on every day
-        if (t.frequencyType === 'daily' || t.isHabit) return true
+
+        // One-off task
         if (t.date !== selectedDate) return false
       }
       if (filter === 'today')   return t.date === today
@@ -275,7 +300,7 @@ export function TasksPage({ tasks, toggleTask, deleteTask, openModal, onStartFoc
         </div>
       ) : filtered.map(t => (
         <TaskRow key={t.id} t={t}
-          toggleTask={toggleTask} deleteTask={deleteTask}
+          toggleTask={toggleTask} deleteTask={deleteTask} openEditModal={openEditModal}
           onStartFocus={onStartFocus}
           updateTaskValue={updateTaskValue}
           updateSubtasks={updateSubtasks}

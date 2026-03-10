@@ -136,3 +136,107 @@
   .catGrid { grid-template-columns: repeat(2, 1fr); }
   .row2    { grid-template-columns: 1fr; }
 }
+
+/* Notification picker */
+.notifRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.notifBtn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 5px; padding: 9px 4px;
+  border-radius: 10px; border: 1.5px solid var(--border-2);
+  background: var(--surface-2); color: var(--text-2);
+  font-family: inherit; font-size: 11px; cursor: pointer;
+  transition: border-color .15s, background .15s, color .15s;
+}
+.notifBtn:hover { border-color: var(--border-3); color: var(--text); }
+.notifActive {
+  border-color: var(--accent) !important;
+  background: var(--accent-soft) !important;
+  color: var(--accent) !important;
+  font-weight: 500;
+}
+
+@media (max-width: 400px) {
+  .notifRow { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Frequency grid */
+.freqGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.freqBtn {
+  display: flex; flex-direction: column; align-items: flex-start;
+  padding: 10px 12px; gap: 2px;
+  border-radius: 10px; border: 1.5px solid var(--border-2);
+  background: var(--surface-2); cursor: pointer;
+  transition: border-color .15s, background .15s;
+  text-align: left;
+}
+.freqBtn:hover { border-color: var(--border-3); }
+.freqActive {
+  border-color: var(--accent) !important;
+  background: var(--accent-soft) !important;
+}
+.freqLabel { font-size: 13px; font-weight: 600; color: var(--text); }
+.freqActive .freqLabel { color: var(--accent); }
+.freqSub   { font-size: 11px; color: var(--text-3); }
+.freqActive .freqSub   { color: var(--accent); opacity: 0.7; }
+
+/* Day buttons */
+.dayRow {
+  display: flex; gap: 5px; flex-wrap: wrap;
+}
+.dayBtn {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1.5px solid var(--border-2);
+  background: var(--surface-2); cursor: pointer;
+  font-size: 11.5px; font-weight: 500; color: var(--text-2);
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color .15s, background .15s, color .15s;
+}
+.dayBtn:hover { border-color: var(--border-3); color: var(--text); }
+.dayActive {
+  border-color: var(--accent) !important;
+  background: var(--accent) !important;
+  color: #fff !important;
+  font-weight: 700;
+}
+.dayHint {
+  font-size: 11.5px; color: var(--red);
+  margin-top: 5px;
+}
+
+/* Reminder grid */
+.reminderGrid {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.reminderBtn {
+  padding: 6px 12px; border-radius: 8px;
+  border: 1.5px solid var(--border-2);
+  background: var(--surface-2); cursor: pointer;
+  font-size: 12.5px; font-weight: 500; color: var(--text-2);
+  transition: border-color .15s, background .15s, color .15s;
+}
+.reminderBtn:hover { border-color: var(--border-3); color: var(--text); }
+.reminderActive {
+  border-color: var(--accent) !important;
+  background: var(--accent-soft) !important;
+  color: var(--accent) !important;
+  font-weight: 600;
+}
+.reminderSet {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 8px; padding: 6px 10px;
+  background: var(--accent-soft); border-radius: 8px;
+  font-size: 12px; color: var(--accent); font-weight: 500;
+}
+.reminderClear {
+  margin-left: auto; background: none; border: none;
+  cursor: pointer; color: var(--accent); font-size: 16px;
+  line-height: 1; padding: 0 2px;
+}

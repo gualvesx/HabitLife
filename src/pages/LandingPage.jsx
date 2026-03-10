@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
+import { Brain3D } from '../components/ui/Brain3D'
 import * as THREE from 'three'
 import { LogoIcon } from '../components/ui/LogoIcon'
-import { Brain3D } from '../components/ui/Brain3D'
 import s from './LandingPage.module.css'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -458,7 +458,6 @@ export function LandingPage({ onEnter }) {
           <div className={s.brainFrame}>
             <Brain3D className={s.brainCanvas} />
           </div>
-
         </div>
       </section>
 

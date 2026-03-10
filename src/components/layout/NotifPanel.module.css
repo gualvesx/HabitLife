@@ -9,10 +9,26 @@
   animation: fadeDown var(--duration-base) var(--ease-out);
   z-index: var(--z-dropdown);
 }
+
+/* Mobile: fixed full-width panel at top */
+@media (max-width: 600px) {
+  .panel {
+    position: fixed;
+    top: 56px; left: 8px; right: 8px;
+    width: auto;
+    max-height: calc(100dvh - 72px);
+    overflow-y: auto;
+    border-radius: 16px;
+  }
+}
+
 .header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 13px 15px 11px;
   border-bottom: 1px solid var(--border);
+  position: sticky; top: 0;
+  background: var(--surface);
+  z-index: 1;
 }
 .headerLeft { display: flex; align-items: center; gap: 7px; }
 .title { font-size: 13px; font-weight: 600; color: var(--text); }
@@ -31,7 +47,8 @@
 .act:hover { background: var(--surface-2); color: var(--text); }
 .act.danger:hover { color: var(--red); }
 
-.list { max-height: 320px; overflow-y: auto; }
+.list { max-height: 340px; overflow-y: auto; }
+@media (max-width: 600px) { .list { max-height: none; } }
 
 .item {
   display: flex; align-items: flex-start; gap: 10px;
@@ -73,6 +90,7 @@
   opacity: 0; transition: opacity var(--duration-fast), background var(--duration-fast);
 }
 .item:hover .del { opacity: 1; }
+@media (max-width: 600px) { .del { opacity: 1; } }
 .del:hover { background: var(--surface-3); color: var(--text); }
 
 .empty {
@@ -87,3 +105,12 @@
 }
 .empty p    { font-size: 12.5px; font-weight: 500; color: var(--text-2); }
 .empty span { font-size: 11px; color: var(--text-3); }
+
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

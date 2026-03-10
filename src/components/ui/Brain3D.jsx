@@ -1,10 +1,6 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 
-// Raw GitHub URL — served directly as binary, no redirect issues
-// blob/ links return HTML; raw.githubusercontent.com serves the actual file
-const RAW_URL = 'https://raw.githubusercontent.com/gualvesx/HabitLife/main/public/amethyst_cortex.glb'
-
 export function Brain3D({ className, style }) {
   const canvasRef = useRef(null)
 
@@ -18,7 +14,7 @@ export function Brain3D({ className, style }) {
     renderer.toneMapping = THREE.ACESFilmicToneMapping
     renderer.toneMappingExposure = 1.1
 
-    const scene = new THREE.Scene()
+    const scene  = new THREE.Scene()
     const w = canvas.clientWidth || 460
     const h = canvas.clientHeight || 460
     renderer.setSize(w, h, false)
@@ -46,29 +42,17 @@ export function Brain3D({ className, style }) {
         const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js')
         const loader = new GLTFLoader()
 
-        // 1st attempt: local public/ (works when running locally or Vercel deploys the file)
-        // 2nd attempt: raw GitHub (works when public/ file is missing from deploy)
-        const urls = ['/amethyst_cortex.glb', RAW_URL]
-        let buf = null
+        // Use fetch + arraybuffer + parse — avoids MIME/redirect issues on any host
+        const res = await fetch('/amethyst_cortex.glb')
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const buf = await res.arrayBuffer()
 
-        for (const url of urls) {
-          try {
-            const res = await fetch(url)
-            if (!res.ok) continue
-            const candidate = await res.arrayBuffer()
-            // Validate GLB magic bytes: 0x676C5446 = "glTF"
-            const view = new Uint8Array(candidate, 0, 4)
-            if (view[0]===0x67 && view[1]===0x6C && view[2]===0x54 && view[3]===0x46) {
-              buf = candidate
-              break
-            }
-          } catch { /* try next */ }
-        }
-
-        if (!buf) throw new Error('All sources failed or returned non-GLB data')
+        // Validate GLB magic bytes: "glTF"
+        const magic = new Uint8Array(buf, 0, 4)
+        if (!(magic[0]===0x67 && magic[1]===0x6C && magic[2]===0x54 && magic[3]===0x46))
+          throw new Error('Not a valid GLB')
 
         const gltf = await new Promise((res2, rej2) => loader.parse(buf, '', res2, rej2))
-
         model = gltf.scene
         const box = new THREE.Box3().setFromObject(model)
         const cen = box.getCenter(new THREE.Vector3())
@@ -87,7 +71,7 @@ export function Brain3D({ className, style }) {
         })
         scene.add(model)
       } catch (err) {
-        console.error('Brain3D: failed to load GLB —', err.message)
+        console.error('Brain3D GLB failed:', err.message)
       }
     })()
 

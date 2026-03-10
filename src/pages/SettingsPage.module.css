@@ -33,3 +33,37 @@
   background: var(--green); flex-shrink: 0;
   animation: pulseDot 2.5s ease-in-out infinite;
 }
+
+.permRow {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.permHint {
+  font-size: 11px; color: var(--text-3); font-style: italic;
+  max-width: 200px; text-align: right; line-height: 1.4;
+}
+
+.testSection {
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.testTitle {
+  font-size: 11.5px; font-weight: 600; color: var(--text-3);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 12px;
+}
+.testRow {
+  display: flex; flex-direction: column; gap: 12px;
+}
+.testItem {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px;
+}
+.testInfo { flex: 1; }
+.testMsg {
+  font-size: 11.5px; margin-top: 5px;
+  padding: 5px 9px; border-radius: 7px;
+}
+.testOk  { background: var(--green-soft);  color: var(--green); }
+.testErr { background: color-mix(in srgb, var(--red) 10%, transparent); color: var(--red); }

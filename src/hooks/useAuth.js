@@ -1,42 +1,74 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../utils/supabase'
 
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream
+
 export function useAuth() {
   const [user,    setUser]    = useState(null)
-  const [loading, setLoading] = useState(true)   // true on mount (checking session)
+  const [loading, setLoading] = useState(true)
   const [error,   setError]   = useState('')
 
   // ── Restore session on mount + listen to auth changes ──────────────────
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+    let mounted = true
 
-    // Listen to login / logout / token refresh
+    const init = async () => {
+      try {
+        // On iOS, getSession can return null even when a valid session exists
+        // right after login — retry once after a short delay if so
+        let session = null
+        const { data } = await supabase.auth.getSession()
+        session = data.session
+
+        if (!session && isIOS) {
+          await new Promise(r => setTimeout(r, 600))
+          const retry = await supabase.auth.getSession()
+          session = retry.data.session
+        }
+
+        if (mounted) {
+          setUser(session?.user ?? null)
+          setLoading(false)
+        }
+      } catch {
+        if (mounted) setLoading(false)
+      }
+    }
+
+    init()
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return
       setUser(session?.user ?? null)
       setLoading(false)
     })
 
-    return () => subscription.unsubscribe()
+    return () => { mounted = false; subscription.unsubscribe() }
   }, [])
 
   // ── Login ───────────────────────────────────────────────────────────────
   const login = useCallback(async (email, password) => {
     setError('')
     setLoading(true)
-    const { error: err } = await supabase.auth.signInWithPassword({ email, password })
-    setLoading(false)
+    const { data, error: err } = await supabase.auth.signInWithPassword({ email, password })
+
     if (err) {
+      setLoading(false)
       setError(
-        err.message.includes('Invalid login')
+        err.message.includes('Invalid login') || err.message.includes('invalid_credentials')
           ? 'Email ou senha incorretos'
           : err.message
       )
       return false
     }
+
+    // iOS: wait for onAuthStateChange to propagate before unlocking
+    if (isIOS && data.session) {
+      await new Promise(r => setTimeout(r, 500))
+      setUser(data.session.user)
+    }
+
+    setLoading(false)
     return true
   }, [])
 
@@ -83,7 +115,6 @@ export function useAuth() {
 
   const clearError = useCallback(() => setError(''), [])
 
-  // Expose friendly name from metadata
   const profile = user
     ? {
         id:    user.id,

@@ -6,10 +6,10 @@ import { CATEGORIES } from '../constants'
 import s from './TimerPage.module.css'
 
 const MODES = {
-  focus:  { label: 'Foco',         secs: 25 * 60, color: '#6d28d9' },
+  focus:  { label: 'Pomodoro',     secs: 25 * 60, color: '#6d28d9' },
   short:  { label: 'Pausa curta',  secs: 5  * 60, color: '#059669' },
   long:   { label: 'Pausa longa',  secs: 15 * 60, color: '#0284c7' },
-  deep:   { label: 'Deep Work',    secs: 90 * 60, color: '#b45309' },
+  deep:   { label: 'Foco profundo',secs: 90 * 60, color: '#b45309' },
   custom: { label: 'Personalizado',secs: 30 * 60, color: '#d97706' },
 }
 
@@ -239,7 +239,7 @@ export function TimerPage({ tasks = [], focusTask, setFocusTask }) {
           {[0,1,2,3].map(i => (
             <div key={i} className={[s.pomoDot, (pomoCount % 4) > i ? s.pomoDone : ''].join(' ')} />
           ))}
-          <span className={s.pomoLabel}>{pomoCount} pomodoros concluídos</span>
+          <span className={s.pomoLabel}>{pomoCount} pomodoros hoje</span>
         </div>
 
         {/* Buttons */}

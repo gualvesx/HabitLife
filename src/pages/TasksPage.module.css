@@ -113,14 +113,17 @@
   display: flex; align-items: center; justify-content: center;
 }
 .expandBtn:hover { color: var(--text); border-color: var(--border-3); }
-.del {
+.editBtn, .del {
   width: 28px; height: 28px; border: none; background: transparent;
   cursor: pointer; color: var(--text-3); border-radius: var(--radius-sm);
   display: flex; align-items: center; justify-content: center;
-  opacity: 0; transition: opacity .15s, color .15s;
+  opacity: 0; transition: opacity .15s, color .15s, background .15s;
 }
+.row:hover .editBtn,
 .row:hover .del { opacity: 1; }
+.editBtn:hover { color: var(--accent); background: var(--accent-soft); }
 .del:hover { color: var(--red); }
+@media (max-width: 600px) { .editBtn, .del { opacity: 1; } }
 
 /* Details (expanded) */
 .details { width: 100%; padding-top: 10px; border-top: 1px solid var(--border); margin-top: 6px; }

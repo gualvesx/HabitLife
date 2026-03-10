@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { PWABanner } from './components/ui/PWABanner'
 import { useTheme }       from './hooks/useTheme'
 import { useAuth }        from './hooks/useAuth'
 import { useTasks }       from './hooks/useTasks'
@@ -31,22 +32,32 @@ export default function App() {
   const notifs = useNotifs(auth.user?.id)
   const [route, setRoute] = useState('landing')
 
-  if (auth.loading && !auth.user) return <Splash />
+  // Safety: never show splash forever (iOS can get stuck)
+  const [maxWait, setMaxWait] = useState(true)
+  useEffect(() => {
+    const t = setTimeout(() => setMaxWait(false), 3000)
+    return () => clearTimeout(t)
+  }, [])
+  if (auth.loading && !auth.user && maxWait) return <Splash />
+
+  // PWA banner wrapper — renders on every page for mobile users
+  const withBanner = (page) => <><PWABanner />{page}</>
 
   // Legal pages — accessible from anywhere
-  if (route === 'termos')      return <TermosPage      onBack={() => setRoute('auth')} />
-  if (route === 'privacidade') return <PrivacidadePage onBack={() => setRoute('auth')} />
+  if (route === 'termos')      return withBanner(<TermosPage      onBack={() => setRoute('auth')} />)
+  if (route === 'privacidade') return withBanner(<PrivacidadePage onBack={() => setRoute('auth')} />)
 
   if (auth.user) {
     const taskActions = {
       addTask:         tasks.addTask,
+      updateTask:      tasks.updateTask,
       toggleTask:      tasks.toggleTask,
       deleteTask:      tasks.deleteTask,
       clearAll:        tasks.clearAll,
       updateTaskValue: tasks.updateTaskValue,
       updateSubtasks:  tasks.updateSubtasks,
     }
-    return (
+    return withBanner(
       <AppShell
         user={auth.user}
         dark={dark}
@@ -60,9 +71,9 @@ export default function App() {
     )
   }
 
-  if (route === 'landing') return <LandingPage onEnter={() => setRoute('auth')} />
+  if (route === 'landing') return withBanner(<LandingPage onEnter={() => setRoute('auth')} />)
 
-  return (
+  return withBanner(
     <AuthPage
       onLogin={auth.login}
       onRegister={auth.register}

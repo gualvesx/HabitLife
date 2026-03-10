@@ -14,7 +14,6 @@ const fromDB = row => ({
   frequencyType:  row.frequency_type ?? 'none',
   frequencyDays:  (() => { try { return JSON.parse(row.frequency_days||'[]') } catch { return [] } })(),
   frequencyInterval: row.frequency_interval ?? 1,
-  isHabit:       row.is_habit ?? false,
   goalValue:      row.goal_value    ?? 0,
   currentValue:   row.current_value ?? 0,
   goalUnit:       row.goal_unit     ?? '',
@@ -24,36 +23,37 @@ const fromDB = row => ({
   reminders:      (() => { try { return JSON.parse(row.reminders||'[]') } catch { return [] } })(),
   alert:          row.alert         ?? 'none',
   xpValue:        row.xp_value      ?? 10,
-  studyMethod:    row.study_method  ?? '',
-  tags:           (() => { try { return JSON.parse(row.tags||'[]') } catch { return [] } })(),
   endDate:        row.end_date      ?? '',
 })
 
-const toDB = (task, userId) => ({
-  user_id:            userId,
-  name:               task.name,
-  category:           task.cat,
-  date:               task.date,
-  time:               task.time === '—' ? null : task.time,
-  is_done:            task.done ?? false,
-  description:        task.desc || null,
-  priority:           task.priority ?? 2,
-  frequency_type:     task.frequencyType ?? 'none',
-  frequency_days:     JSON.stringify(task.frequencyDays ?? []),
-  frequency_interval: task.frequencyInterval ?? 1,
-  goal_value:         task.goalValue ?? 0,
-  current_value:      task.currentValue ?? 0,
-  goal_unit:          task.goalUnit ?? '',
-  goal_step:          task.goalStep ?? 1,
-  project:            task.project ?? '',
-  subtasks:           JSON.stringify(task.subtasks ?? []),
-  reminders:          JSON.stringify(task.reminders ?? []),
-  alert:              task.alert ?? 'none',
-  xp_value:           task.xpValue ?? 10,
-  study_method:       task.studyMethod ?? '',
-  tags:               JSON.stringify(task.tags ?? []),
-  end_date:           task.endDate ?? null,
-})
+const toDB = (task, userId) => {
+  const cleanDays = Array.isArray(task.frequencyDays)
+    ? task.frequencyDays.map(Number).filter(d => !isNaN(d))
+    : []
+  return {
+    user_id:            userId,
+    name:               task.name || 'Sem nome',
+    category:           task.cat  || 'activity',
+    date:               task.date,
+    end_date:           task.endDate || null,
+    time:               (task.time === '—' || !task.time) ? null : task.time,
+    is_done:            task.done ?? false,
+    description:        task.desc || null,
+    priority:           Number(task.priority)          || 2,
+    frequency_type:     task.frequencyType             || 'none',
+    frequency_days:     JSON.stringify(cleanDays),
+    frequency_interval: Number(task.frequencyInterval) || 1,
+    goal_value:         Number(task.goalValue)         || 0,
+    current_value:      Number(task.currentValue)      || 0,
+    goal_step:          Number(task.goalStep)           || 1,
+    goal_unit:          task.goalUnit  || '',
+    project:            task.project   || '',
+    subtasks:           JSON.stringify(Array.isArray(task.subtasks)  ? task.subtasks  : []),
+    reminders:          JSON.stringify(Array.isArray(task.reminders) ? task.reminders : []),
+    alert:              task.alert     || 'none',
+    xp_value:           Number(task.xpValue) || 10,
+  }
+}
 
 // ── XP & Gamification ──────────────────────────────────────────────────────
 const XP_KEY     = 'hl_xp'
@@ -161,10 +161,67 @@ export async function requestNotifPermission() {
   return result
 }
 
-export function scheduleNotification(title, body, delayMs) {
+// Play alarm sound — tries MP3 file first, falls back to Web Audio API
+export function playAlarmSound() {
+  // 1. Try playing the actual alarm.mp3 file
+  try {
+    const audio = new Audio('/alarm.mp3')
+    audio.volume = 1.0
+    const playPromise = audio.play()
+    if (playPromise) {
+      playPromise.catch(() => {
+        // Autoplay blocked — fall back to Web Audio API synthesis
+        _playAlarmSynthesis()
+      })
+    }
+  } catch(e) {
+    _playAlarmSynthesis()
+  }
+  // 2. Vibrate on mobile regardless
+  if ('vibrate' in navigator) navigator.vibrate([300, 100, 300, 100, 500])
+}
+
+function _playAlarmSynthesis() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)()
+    const play = (freq, start, dur) => {
+      const o = ctx.createOscillator()
+      const g = ctx.createGain()
+      o.connect(g); g.connect(ctx.destination)
+      o.type = 'square'; o.frequency.value = freq
+      g.gain.setValueAtTime(0, ctx.currentTime + start)
+      g.gain.linearRampToValueAtTime(0.35, ctx.currentTime + start + 0.02)
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur)
+      o.start(ctx.currentTime + start)
+      o.stop(ctx.currentTime + start + dur + 0.05)
+    }
+    play(880,  0,    0.2)
+    play(880,  0.3,  0.2)
+    play(1100, 0.6,  0.35)
+    play(1100, 0.98, 0.35)
+    play(1320, 1.4,  0.5)
+  } catch(e) { console.warn('Audio synthesis failed:', e) }
+}
+
+// Show system notification via SW or fallback
+export function fireSystemNotification(title, body) {
+  if (!('Notification' in window)) return
+  if (Notification.permission !== 'granted') return
+  const opts = { body, icon: '/logo.svg', badge: '/logo.svg', tag: 'habitlife-task', renotify: true }
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready
+      .then(reg => reg.showNotification(title, opts))
+      .catch(() => { try { new Notification(title, opts) } catch {} })
+  } else {
+    try { new Notification(title, opts) } catch {}
+  }
+}
+
+export function scheduleNotification(title, body, delayMs, alertType = 'both') {
   if (Notification.permission !== 'granted') return
   setTimeout(() => {
-    try { new Notification(title, { body, icon: '/logo.svg' }) } catch {}
+    if (alertType === 'system' || alertType === 'both') fireSystemNotification(title, body)
+    if (alertType === 'alarm'  || alertType === 'both') playAlarmSound(alertType)
   }, delayMs)
 }
 
@@ -180,7 +237,7 @@ export function scheduleTaskReminders(task) {
     const fireAt = taskDate.getTime() - offset
     const delay  = fireAt - Date.now()
     if (delay > 0 && delay < 24 * 3600 * 1000) {
-      scheduleNotification(`⏰ ${task.name}`, `Lembrete: tarefa em ${r}`, delay)
+      scheduleNotification(`⏰ ${task.name}`, `Lembrete: tarefa em ${r}`, delay, task.alert || 'both')
     }
   })
 }
@@ -263,6 +320,26 @@ export function useTasks(userId) {
     if (!error && data) setTasks(prev => prev.map(t => t.id === id ? fromDB(data) : t))
   }, [userId])
 
+  // updateTask accepts either updateTask(taskObj) or updateTask(id, updates)
+  const updateTask = useCallback(async (taskOrId, updates) => {
+    let id, merged
+    if (typeof taskOrId === 'string') {
+      // called as updateTask(id, updates)
+      const existing = tasks.find(t => t.id === taskOrId)
+      id = taskOrId
+      merged = { ...(existing || {}), ...updates }
+    } else {
+      // called as updateTask(taskObj) — id is inside the object
+      id = taskOrId.id
+      merged = taskOrId
+    }
+    if (!id) return
+    const { data, error } = await supabase.from('tasks')
+      .update(toDB(merged, userId)).eq('id', id).eq('user_id', userId).select().single()
+    if (!error && data) setTasks(prev => prev.map(t => t.id === id ? fromDB(data) : t))
+    return { data, error }
+  }, [tasks, userId])
+
   const deleteTask = useCallback(async id => {
     const { error } = await supabase.from('tasks').delete().eq('id', id).eq('user_id', userId)
     if (!error) setTasks(prev => prev.filter(t => t.id !== id))
@@ -273,5 +350,5 @@ export function useTasks(userId) {
     if (!error) setTasks([])
   }, [userId])
 
-  return { tasks, taskLoading, addTask, toggleTask, updateTaskValue, updateSubtasks, deleteTask, clearAll }
+  return { tasks, taskLoading, addTask, updateTask, toggleTask, updateTaskValue, updateSubtasks, deleteTask, clearAll }
 }

@@ -91,7 +91,8 @@ nav, section, footer { position: relative; z-index: 10; }
 .navLogo { display: flex; align-items: center; gap: 10px; user-select: none; }
 .navLogoIcon {
   width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
-  background: transparent;
+  background: rgba(4,4,12,0.85);
+  backdrop-filter: blur(4px);
   display: flex; align-items: center; justify-content: center;
   box-shadow: none;
 }

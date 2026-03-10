@@ -5,7 +5,7 @@ import { CATEGORIES, WEEKDAYS_SHORT } from '../constants'
 import { todayKey, dateKey } from '../utils/date'
 import {
   getLevelFromXP, getXPData, addFreezes, updateBestStreak,
-  getBadges, ALL_BADGES, checkAndAwardBadges, getFocusLog, requestNotifPermission
+  getBadges, ALL_BADGES, checkAndAwardBadges, getFocusLog
 } from '../hooks/useTasks'
 import s from './DashboardPage.module.css'
 
@@ -112,7 +112,7 @@ function BadgeToast({ badges, onDismiss }) {
 
 const PRIORITY_COLORS = { 1: 'var(--red)', 2: 'var(--yellow)', 3: 'var(--green)' }
 
-export function DashboardPage({ tasks, toggleTask, openModal, onStartFocus, updateTaskValue }) {
+export function DashboardPage({ tasks, toggleTask, deleteTask, openModal, openEditModal, onStartFocus, updateTaskValue }) {
   const now        = new Date()
   const TODAY      = todayKey()
   const todayTasks = tasks.filter(t => t.date === TODAY)
@@ -133,7 +133,6 @@ export function DashboardPage({ tasks, toggleTask, openModal, onStartFocus, upda
 
   const [xpData,    setXpData]    = useState(getXPData)
   const [newBadges, setNewBadges] = useState([])
-  const [notifPerm, setNotifPerm] = useState(Notification?.permission || 'default')
 
   // Badge checking
   const checkBadges = useCallback(() => {
@@ -168,11 +167,6 @@ export function DashboardPage({ tasks, toggleTask, openModal, onStartFocus, upda
     checkBadges()
   }, [streak, checkBadges])
 
-  const handleRequestNotif = async () => {
-    const p = await requestNotifPermission()
-    setNotifPerm(p)
-  }
-
   // Week bars
   const weekBars = WEEKDAYS_SHORT.map((d, i) => {
     const diff = i - now.getDay()
@@ -191,15 +185,6 @@ export function DashboardPage({ tasks, toggleTask, openModal, onStartFocus, upda
     <div className={s.page}>
       {/* Badge toast */}
       {newBadges.length > 0 && <BadgeToast badges={newBadges} onDismiss={() => setNewBadges([])} />}
-
-      {/* Notification permission prompt */}
-      {notifPerm === 'default' && (
-        <div className={s.notifBanner}>
-          <span>Ative notificações para receber lembretes das suas tarefas</span>
-          <button onClick={handleRequestNotif}>Ativar</button>
-          <button className={s.notifDismiss} onClick={() => setNotifPerm('dismissed')}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-        </div>
-      )}
 
       {/* Stat Cards */}
       <div className={s.stats}>
@@ -247,7 +232,7 @@ export function DashboardPage({ tasks, toggleTask, openModal, onStartFocus, upda
               <p>Nenhuma tarefa para hoje</p>
               <Button size="sm" onClick={openModal}
                 icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>}
-              >Adicionar tarefa</Button>
+              >Adicionar item</Button>
             </div>
           ) : (
             <div className={s.taskList}>
@@ -287,6 +272,18 @@ export function DashboardPage({ tasks, toggleTask, openModal, onStartFocus, upda
                         <button className={s.focusBtn} title="Iniciar foco"
                           onClick={e => { e.stopPropagation(); onStartFocus(t) }}>
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        </button>
+                      )}
+                      {openEditModal && (
+                        <button className={s.editBtn} title="Editar"
+                          onClick={e => { e.stopPropagation(); openEditModal(t) }}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </button>
+                      )}
+                      {deleteTask && (
+                        <button className={s.delBtn} title="Excluir"
+                          onClick={e => { e.stopPropagation(); deleteTask(t.id) }}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
                         </button>
                       )}
                     </div>
