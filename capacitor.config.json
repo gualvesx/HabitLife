@@ -1,0 +1,15 @@
+{
+  "appId": "com.habitlife.app",
+  "appName": "HabitLife",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_icon_config_sample",
+      "iconColor": "#7c3aed",
+      "sound": "alarm.mp3"
+    }
+  }
+}

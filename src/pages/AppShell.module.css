@@ -1,0 +1,70 @@
+.shell { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+
+.overlay {
+  position: fixed; inset: 0; z-index: 150;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+.body  {
+  display: flex; flex: 1;
+  transition: padding-left 0.3s var(--ease-out);
+}
+.bodyCollapsed { /* sidebar is 64px when collapsed */ }
+
+.main  {
+  flex: 1; padding: 24px 28px;
+  min-width: 0; overflow-x: hidden;
+}
+
+.pageHeader { margin-bottom: 22px; animation: fadeUp var(--duration-slow) var(--ease-out); }
+.title { font-size: 22px; font-weight: 700; letter-spacing: -0.035em; color: var(--text); }
+.sub   { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+
+.loader {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 14px;
+  padding: 80px 20px; color: var(--text-3); font-size: 13px;
+}
+.loaderSpinner {
+  width: 28px; height: 28px;
+  border: 2.5px solid var(--surface-3);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg) } }
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .main { padding: 16px; }
+  .title { font-size: 18px; }
+}
+
+/* ── Notification permission banner ── */
+.notifPrompt {
+  position: sticky; top: 0; z-index: 200;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px;
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 70%, #0284c7));
+  color: #fff; font-size: 13px;
+}
+.notifPrompt svg { flex-shrink: 0; opacity: 0.9; }
+.notifPrompt span { flex: 1; }
+.notifGrant {
+  flex-shrink: 0; padding: 5px 14px;
+  background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 8px; color: #fff; font-size: 12px; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+  transition: background .15s;
+}
+.notifGrant:hover { background: rgba(255,255,255,0.32); }
+.notifDismiss {
+  flex-shrink: 0; width: 24px; height: 24px;
+  background: transparent; border: none; cursor: pointer;
+  color: rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center;
+  border-radius: 6px; transition: background .15s;
+}
+.notifDismiss:hover { background: rgba(255,255,255,0.15); color: #fff; }

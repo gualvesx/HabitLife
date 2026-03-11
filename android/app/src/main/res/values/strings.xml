@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">HabitLife</string>
+    <string name="title_activity_main">HabitLife</string>
+    <string name="package_name">com.habitlife.app</string>
+    <string name="custom_url_scheme">com.habitlife.app</string>
+</resources>
