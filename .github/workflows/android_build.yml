@@ -3,71 +3,63 @@ name: Build & Release Android APK
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:       # permite rodar manualmente pelo GitHub
+  workflow_dispatch:
+
+# ── Permissões explícitas para criar releases ─────────────────────────────
+permissions:
+  contents: write
+  actions: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # ── 1. Código ──────────────────────────────────────────────────────────
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ── 2. Node ───────────────────────────────────────────────────────────
       - name: Setup Node 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      # ── 3. Java 17 ────────────────────────────────────────────────────────
       - name: Setup JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # ── 4. Android SDK ────────────────────────────────────────────────────
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # ── 5. Dependências npm ───────────────────────────────────────────────
       - name: Install dependencies
         run: npm ci
 
-      # ── 6. Build web (Vite) ───────────────────────────────────────────────
       - name: Build web app
         run: npm run build
 
-      # ── 7. Capacitor sync ─────────────────────────────────────────────────
       - name: Capacitor sync android
         run: npx cap sync android
 
-      # ── 8. Copia alarm.mp3 para res/raw (sons nativos Android) ────────────
       - name: Copy alarm sound to Android res/raw
         run: |
           mkdir -p android/app/src/main/res/raw
           cp public/alarm.mp3 android/app/src/main/res/raw/alarm.mp3
-          echo "✓ alarm.mp3 copiado para res/raw"
 
-      # ── 9. Permissões do Gradle ───────────────────────────────────────────
       - name: Make Gradle executable
         run: chmod +x android/gradlew
 
-      # ── 10. Build APK Debug ───────────────────────────────────────────────
       - name: Build debug APK
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon
 
-      # ── 11. Renomeia APK com versão + data ────────────────────────────────
       - name: Rename APK
         run: |
           DATE=$(date +'%Y%m%d')
           cp android/app/build/outputs/apk/debug/app-debug.apk \
              android/app/build/outputs/apk/debug/HabitLife-v${{ github.run_number }}-${DATE}.apk
 
-      # ── 12. Upload como artifact (disponível por 90 dias) ─────────────────
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
@@ -75,7 +67,14 @@ jobs:
           path: android/app/build/outputs/apk/debug/HabitLife-*.apk
           retention-days: 90
 
-      # ── 13. Cria/atualiza GitHub Release com o APK ────────────────────────
+      # Tag necessária para criar a release — cria uma se não existir
+      - name: Create tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -f "v${{ github.run_number }}"
+          git push origin "v${{ github.run_number }}" --force
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
