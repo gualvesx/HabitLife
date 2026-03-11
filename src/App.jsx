@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { PWABanner } from './components/ui/PWABanner'
+import { useState, useEffect, useRef } from 'react'
+import { PWABanner }      from './components/ui/PWABanner'
 import { useTheme }       from './hooks/useTheme'
 import { useAuth }        from './hooks/useAuth'
 import { useTasks }       from './hooks/useTasks'
@@ -15,7 +15,8 @@ function Splash() {
   return (
     <div className={s.splash}>
       <div className={s.splashLogo}>
-        <img src="/logo.svg" alt="HabitLife" width={40} height={40} style={{ objectFit: 'contain', display: 'block' }} />
+        <img src="/logo.svg" alt="HabitLife" width={40} height={40}
+          style={{ objectFit: 'contain', display: 'block' }} />
       </div>
       <div className={s.splashName}>HabitLife</div>
       <div className={s.splashSub}>Evolução</div>
@@ -32,21 +33,36 @@ export default function App() {
   const notifs = useNotifs(auth.user?.id)
   const [route, setRoute] = useState('landing')
 
-  // Safety: never show splash forever (iOS can get stuck)
-  const [maxWait, setMaxWait] = useState(true)
+  // Track whether we've passed the initial auth check
+  const [ready, setReady] = useState(false)
+  const readyTimer = useRef(null)
+
   useEffect(() => {
-    const t = setTimeout(() => setMaxWait(false), 3000)
-    return () => clearTimeout(t)
-  }, [])
-  if (auth.loading && !auth.user && maxWait) return <Splash />
+    // As soon as loading finishes OR user is set, we're ready
+    if (!auth.loading || auth.user) {
+      setReady(true)
+      return
+    }
+    // Hard timeout: never show splash more than 4s
+    readyTimer.current = setTimeout(() => setReady(true), 4000)
+    return () => clearTimeout(readyTimer.current)
+  }, [auth.loading, auth.user])
 
-  // PWA banner wrapper — renders on every page for mobile users
-  const withBanner = (page) => <><PWABanner />{page}</>
+  // When user logs in (user goes from null → value), make sure we're ready
+  useEffect(() => {
+    if (auth.user) setReady(true)
+  }, [auth.user])
 
-  // Legal pages — accessible from anywhere
+  // Show splash only while genuinely waiting for initial session check
+  if (!ready) return <Splash />
+
+  const withBanner = page => <><PWABanner />{page}</>
+
+  // Legal pages
   if (route === 'termos')      return withBanner(<TermosPage      onBack={() => setRoute('auth')} />)
   if (route === 'privacidade') return withBanner(<PrivacidadePage onBack={() => setRoute('auth')} />)
 
+  // Logged in → show app
   if (auth.user) {
     const taskActions = {
       addTask:         tasks.addTask,

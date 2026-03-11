@@ -12,7 +12,7 @@ const savePrefs = p  => { try { localStorage.setItem(PREFS_KEY, JSON.stringify(p
 
 export function SettingsPage({ dark, onToggleTheme, user, tasks, clearAllTasks, onTestAlarm }) {
   const [prefs, setPrefs] = useState(() => ({ notif: true, sound: true, vibr: false, ...loadPrefs() }))
-  const [permStatus,   setPermStatus]   = useState(() => ('Notification' in window ? Notification.permission : 'not_supported'))
+  const [permStatus,   setPermStatus]   = useState(() => (typeof window !== 'undefined' && 'Notification' in window ? (window.Notification?.permission ?? 'not_supported') : 'not_supported'))
   const [testNotifMsg, setTestNotifMsg] = useState(null)
 
   // PWA install
@@ -61,7 +61,7 @@ export function SettingsPage({ dark, onToggleTheme, user, tasks, clearAllTasks, 
   }
 
   const testNotification = async () => {
-    if (Notification.permission !== 'granted') {
+    if ((window.Notification?.permission ?? 'not_supported') !== 'granted') {
       const result = await requestNotifPermission()
       setPermStatus(result)
       if (result !== 'granted') {

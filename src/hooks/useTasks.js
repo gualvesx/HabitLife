@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { scheduleTaskNotifications } from './useNativeAlarm'
 import { supabase } from '../utils/supabase'
 
 // ── DB row ↔ app task ──────────────────────────────────────────────────────
@@ -155,9 +156,9 @@ export function addFocusEntry(entry) {
 // ── Push notifications ─────────────────────────────────────────────────────
 export async function requestNotifPermission() {
   if (!('Notification' in window)) return 'not_supported'
-  if (Notification.permission === 'granted') return 'granted'
-  if (Notification.permission === 'denied')  return 'denied'
-  const result = await Notification.requestPermission()
+  if ((window.Notification?.permission ?? 'not_supported') === 'granted') return 'granted'
+  if ((window.Notification?.permission ?? 'not_supported') === 'denied')  return 'denied'
+  const result = await window.Notification.requestPermission()
   return result
 }
 
@@ -206,19 +207,19 @@ function _playAlarmSynthesis() {
 // Show system notification via SW or fallback
 export function fireSystemNotification(title, body) {
   if (!('Notification' in window)) return
-  if (Notification.permission !== 'granted') return
+  if ((window.Notification?.permission ?? 'not_supported') !== 'granted') return
   const opts = { body, icon: '/logo.svg', badge: '/logo.svg', tag: 'habitlife-task', renotify: true }
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready
       .then(reg => reg.showNotification(title, opts))
-      .catch(() => { try { new Notification(title, opts) } catch {} })
+      .catch(() => { try { new window.Notification(title, opts) } catch {} })
   } else {
-    try { new Notification(title, opts) } catch {}
+    try { new window.Notification(title, opts) } catch {}
   }
 }
 
 export function scheduleNotification(title, body, delayMs, alertType = 'both') {
-  if (Notification.permission !== 'granted') return
+  if ((window.Notification?.permission ?? 'not_supported') !== 'granted') return
   setTimeout(() => {
     if (alertType === 'system' || alertType === 'both') fireSystemNotification(title, body)
     if (alertType === 'alarm'  || alertType === 'both') playAlarmSound(alertType)
@@ -227,7 +228,7 @@ export function scheduleNotification(title, body, delayMs, alertType = 'both') {
 
 export function scheduleTaskReminders(task) {
   if (!task.reminders || task.reminders.length === 0) return
-  if (Notification.permission !== 'granted') return
+  if ((window.Notification?.permission ?? 'not_supported') !== 'granted') return
   const OFFSETS = { '15min': 15*60000, '30min': 30*60000, '1h': 3600000, '2h': 7200000, '4h': 14400000, '1d': 86400000 }
   if (!task.time || task.time === '—') return
   const [hh, mm] = task.time.split(':').map(Number)
@@ -274,7 +275,7 @@ export function useTasks(userId) {
     if (!error && data) {
       const newTask = fromDB(data)
       setTasks(prev => [...prev, newTask])
-      scheduleTaskReminders(newTask)
+      scheduleTaskNotifications(newTask)
     }
   }, [userId])
 

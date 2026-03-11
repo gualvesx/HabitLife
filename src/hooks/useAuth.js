@@ -1,55 +1,50 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../utils/supabase'
 
-const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream
+const isMobile = /iphone|ipad|ipod|android/i.test(navigator.userAgent)
 
 export function useAuth() {
   const [user,    setUser]    = useState(null)
   const [loading, setLoading] = useState(true)
   const [error,   setError]   = useState('')
+  const mountedRef = useRef(true)
 
-  // ── Restore session on mount + listen to auth changes ──────────────────
   useEffect(() => {
-    let mounted = true
+    mountedRef.current = true
 
-    const init = async () => {
-      try {
-        // On iOS, getSession can return null even when a valid session exists
-        // right after login — retry once after a short delay if so
-        let session = null
-        const { data } = await supabase.auth.getSession()
-        session = data.session
-
-        if (!session && isIOS) {
-          await new Promise(r => setTimeout(r, 600))
-          const retry = await supabase.auth.getSession()
-          session = retry.data.session
-        }
-
-        if (mounted) {
-          setUser(session?.user ?? null)
-          setLoading(false)
-        }
-      } catch {
-        if (mounted) setLoading(false)
-      }
-    }
-
-    init()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) return
+    // 1. onAuthStateChange fires reliably on all platforms including mobile Safari
+    //    Set this up FIRST so we never miss the event
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mountedRef.current) return
       setUser(session?.user ?? null)
       setLoading(false)
     })
 
-    return () => { mounted = false; subscription.unsubscribe() }
+    // 2. Also call getSession to handle the case where the session already
+    //    exists (e.g. page reload) and onAuthStateChange won't fire again
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mountedRef.current) return
+      // Only update if onAuthStateChange hasn't already resolved things
+      setUser(prev => {
+        if (prev) return prev          // already set by onAuthStateChange
+        return session?.user ?? null
+      })
+      setLoading(false)
+    }).catch(() => {
+      if (mountedRef.current) setLoading(false)
+    })
+
+    return () => {
+      mountedRef.current = false
+      subscription.unsubscribe()
+    }
   }, [])
 
   // ── Login ───────────────────────────────────────────────────────────────
   const login = useCallback(async (email, password) => {
     setError('')
     setLoading(true)
+
     const { data, error: err } = await supabase.auth.signInWithPassword({ email, password })
 
     if (err) {
@@ -62,9 +57,8 @@ export function useAuth() {
       return false
     }
 
-    // iOS: wait for onAuthStateChange to propagate before unlocking
-    if (isIOS && data.session) {
-      await new Promise(r => setTimeout(r, 500))
+    // On mobile, manually set user immediately in case onAuthStateChange is slow
+    if (data?.session?.user) {
       setUser(data.session.user)
     }
 

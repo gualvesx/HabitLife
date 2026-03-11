@@ -39,7 +39,7 @@ export function AppShell({ user, dark, onToggleTheme, onLogout, tasks, taskLoadi
   // ── Time-based alarm checker — runs every 30s ──────────────────────────
   useEffect(() => {
     const checkAlarms = () => {
-      if (Notification.permission !== 'granted') return
+      if ((window.Notification?.permission ?? 'not_supported') !== 'granted') return
       const now  = new Date()
       const hhmm = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`
       const today = todayKey()

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Icon } from '../constants/icons'
 import { Card } from '../components/ui/Card'
 import { addFocusEntry, getFocusLog } from '../hooks/useTasks'
+import { useNativeAlarm } from '../hooks/useNativeAlarm'
 import { CATEGORIES } from '../constants'
 import s from './TimerPage.module.css'
 
@@ -79,6 +80,7 @@ function getPomoCount() { try { return parseInt(localStorage.getItem(POMO_KEY)||
 function incPomoCount() { try { localStorage.setItem(POMO_KEY, String(getPomoCount()+1)) } catch {} }
 
 export function TimerPage({ tasks = [], focusTask, setFocusTask }) {
+  const { fireNow } = useNativeAlarm()
   const [mode,       setMode]      = useState('focus')
   const [sec,        setSec]       = useState(MODES.focus.secs)
   const [run,        setRun]       = useState(false)
@@ -119,7 +121,7 @@ export function TimerPage({ tasks = [], focusTask, setFocusTask }) {
           if (s <= 1) {
             clearInterval(timerRef.current); setRun(false)
             if (mode === 'focus') { incPomoCount(); setPomoCount(getPomoCount()) }
-            try { new Notification('HabitLife', { body: `${currentMode.label} concluído!`, icon: '/logo.svg' }) } catch {}
+            fireNow('HabitLife ✓', `${currentMode.label} concluído! Bom trabalho.`)
             return 0
           }
           return s - 1
