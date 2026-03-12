@@ -3,6 +3,7 @@
 ![Status do Projeto](https://img.shields.io/badge/Status-Open--Source-brightgreen)
 ![React](https://img.shields.io/badge/React-18-blue)
 ![Vite](https://img.shields.io/badge/Vite-5-646CFF)
+<img width="1919" height="967" alt="image" src="https://github.com/user-attachments/assets/80325252-0b53-4ca2-b4c1-f3c5843ff3bb" />
 
 O **HabitLife** é um ecossistema **Open Source** de rastreamento de hábitos focado em atletas. Desenvolvido para oferecer **máxima performance e privacidade**, o projeto utiliza **React 18** e **Vite 5**, mantendo uma arquitetura limpa com **zero dependências de UI externas**.
 
