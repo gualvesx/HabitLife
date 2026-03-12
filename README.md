@@ -1,76 +1,62 @@
-# HabitLife · Esporte
+# 🏋️ HabitLife · Esporte (Open Source)
 
-App de rastreamento de hábitos para atletas. React 18 + Vite 5, zero dependências de UI externas.
+![Status do Projeto](https://img.shields.io/badge/Status-Open--Source-brightgreen)
+![React](https://img.shields.io/badge/React-18-blue)
+![Vite](https://img.shields.io/badge/Vite-5-646CFF)
 
-## Rodar localmente
+O **HabitLife** é um ecossistema **Open Source** de rastreamento de hábitos focado em atletas. Desenvolvido para oferecer máxima performance e privacidade, o projeto utiliza **React 18** e **Vite 5**, mantendo uma arquitetura limpa com **zero dependências de UI externas**.
 
+---
+
+## 🌟 Características do Site
+
+O HabitLife foi projetado para ser uma **Single Page Application (SPA)** robusta com foco na experiência do usuário (UX):
+
+* **⚡ Performance Extrema:** Renderização instantânea sem o peso de frameworks de CSS pesados.
+* **🎨 Design System Próprio:** Interface moderna e responsiva construída do zero com CSS Modules.
+* **📊 Analytics de Atleta:** Visualização de progresso através de estatísticas e calendários de consistência.
+* **⏱️ Ferramentas de Treino:** Cronômetro integrado para sessões de foco e exercícios.
+* **🔐 Privacidade Total:** Seus dados pertencem a você. Atualmente, o app utiliza `localStorage` para persistência local rápida.
+* **🌓 Tema Adaptativo:** Suporte nativo a Light/Dark mode que respeita a preferência do sistema.
+
+---
+
+## 📲 Instalação no Android
+
+Para levar o HabitLife para o seu dispositivo móvel como um aplicativo nativo:
+
+### Opção 1: WebApp (PWA) - Recomendado
+1. Acesse o site pelo **Google Chrome** no Android.
+2. Toque nos **três pontos (⋮)** no canto superior.
+3. Selecione **"Instalar aplicativo"** ou **"Adicionar à tela inicial"**.
+4. O app agora terá um ícone na sua gaveta de aplicativos e rodará em tela cheia.
+
+### Opção 2: Build Nativa com Capacitor
+Se você é desenvolvedor e deseja gerar um APK:
 ```bash
+# Adicione o Capacitor ao projeto
+npm install @capacitor/core @capacitor/cli @capacitor/android
+npx cap init HabitLife com.exemplo.habitlife
+npm run build
+npx cap add android
+npx cap copy
+npx cap open android
+```
+🛠️ Rodar Localmente (Desenvolvimento)Bash# Clone o repositório
+git clone [https://github.com/gualvesx/HabitLife.git](https://github.com/gualvesx/HabitLife.git)
+
+# Instale as dependências
 npm install
+
+# Inicie o servidor dev
 npm run dev
-# → http://localhost:5173
-```
-
-## Estrutura do projeto
-
-```
-src/
-├── App.jsx                      # Root — roteamento login ↔ app
-├── main.jsx                     # Entry point
-├── styles/
-│   └── globals.css              # Design tokens (CSS vars), reset, keyframes
-├── constants/
-│   ├── index.js                 # MONTHS, CATEGORIES, NAV_ITEMS, etc.
-│   └── icons.jsx                # Todos os ícones SVG inline
-├── utils/
-│   ├── storage.js               # Abstração do localStorage
-│   ├── auth.js                  # Helpers de autenticação
-│   ├── date.js                  # Funções de data
-│   └── capitalize.js
-├── hooks/
-│   ├── useTheme.js              # Tema claro/escuro persistido
-│   ├── useAuth.js               # Login, cadastro, sessão
-│   ├── useTasks.js              # CRUD de tarefas + persistência
-│   └── useNotifs.js             # Estado de notificações
-├── components/
-│   ├── ui/                      # Átomos reutilizáveis
-│   │   ├── Button.jsx / .module.css
-│   │   ├── Input.jsx  / .module.css
-│   │   ├── Modal.jsx  / .module.css
-│   │   ├── Toggle.jsx / .module.css
-│   │   └── Card.jsx   / .module.css
-│   ├── layout/                  # Estrutura da página
-│   │   ├── Header.jsx / .module.css
-│   │   ├── Sidebar.jsx / .module.css
-│   │   └── NotifPanel.jsx / .module.css
-│   ├── auth/                    # Fluxo de autenticação
-│   │   ├── AuthPage.jsx / .module.css
-│   │   ├── LoginForm.jsx / AuthForm.module.css
-│   │   └── RegisterForm.jsx
-│   └── tasks/
-│       └── TaskModal.jsx / .module.css
-└── pages/
-    ├── AppShell.jsx / .module.css   # Shell do app autenticado
-    ├── DashboardPage.jsx / .module.css
-    ├── TasksPage.jsx / .module.css
-    ├── CalendarPage.jsx / .module.css
-    ├── TimerPage.jsx / .module.css
-    ├── StatsPage.jsx / .module.css
-    └── SettingsPage.jsx / .module.css
-```
-
-## Expandir
-
-| O que adicionar         | Onde mexer                        |
-|-------------------------|-----------------------------------|
-| Nova página             | `src/pages/` + `constants/index.js` (NAV_ITEMS) |
-| Novo componente UI      | `src/components/ui/`              |
-| Nova rota/seção         | `AppShell.jsx`                    |
-| Nova variável de tema   | `styles/globals.css`              |
-| Novo ícone              | `constants/icons.jsx`             |
-| API real (backend)      | `utils/storage.js` → trocar por fetch |
-| Auth real               | `hooks/useAuth.js`                |
-
-## Tecnologias
-
-- **React 18** · **Vite 5** · **CSS Modules** · **localStorage**
-- Zero bibliotecas de UI externas — tudo feito do zero
+# → Local: http://localhost:5173
+📂 Estrutura do ProjetoO código é organizado para facilitar a colaboração Open Source:Plaintextsrc/
+├── components/          # Átomos (UI), Layouts e Auth
+├── hooks/               # Lógica compartilhada (Auth, Tasks, Notifs, Theme)
+├── pages/               # Views principais (Dashboard, Stats, Timer, etc)
+├── utils/               # Helpers de data, auth e storage
+├── constants/           # Configurações globais e ícones SVG inline
+└── styles/              # Design tokens e CSS Global
+🤝 Contribua (Open Source)Este é um projeto de código aberto! Sinta-se à vontade para:Fazer um Fork do projeto.Criar uma Feature Branch (git checkout -b feature/NovaFeature).Comitar suas mudanças (git commit -m 'Add: Nova Feature').Dar um Push na Branch (git push origin feature/NovaFeature).Abrir um Pull Request.🛠️ Guia de ExpansãoO que adicionarOnde mexerNova páginasrc/pages/ + constants/index.jsNovo componente UIsrc/components/ui/API real (backend)utils/storage.js → trocar para fetchNova variável de temastyles/globals.css⭐ Se este projeto te ajudou, deixe uma estrela no GitHub!
+Deseja que eu adicione alguma seção específica sobre como configurar testes automatizados ou integraçã
