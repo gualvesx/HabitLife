@@ -58,5 +58,10 @@ npm run dev
 ├── utils/               # Helpers de data, auth e storage
 ├── constants/           # Configurações globais e ícones SVG inline
 └── styles/              # Design tokens e CSS Global
-🤝 Contribua (Open Source)Este é um projeto de código aberto! Sinta-se à vontade para:Fazer um Fork do projeto.Criar uma Feature Branch (git checkout -b feature/NovaFeature).Comitar suas mudanças (git commit -m 'Add: Nova Feature').Dar um Push na Branch (git push origin feature/NovaFeature).Abrir um Pull Request.🛠️ Guia de ExpansãoO que adicionarOnde mexerNova páginasrc/pages/ + constants/index.jsNovo componente UIsrc/components/ui/API real (backend)utils/storage.js → trocar para fetchNova variável de temastyles/globals.css⭐ Se este projeto te ajudou, deixe uma estrela no GitHub!
+
+🤝 Contribua (Open Source)Este é um projeto de código aberto! 
+Sinta-se à vontade para:Fazer um Fork do projeto.
+Criar uma Feature Branch (git checkout -b feature/NovaFeature).
+Abrir um Pull Request.
+⭐ Se este projeto te ajudou, deixe uma estrela no GitHub!
 Deseja que eu adicione alguma seção específica sobre como configurar testes automatizados ou integraçã
