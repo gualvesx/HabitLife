@@ -471,10 +471,10 @@ export function AddItemModal({ open, onClose, onSave, defaultDate, editTask }) {
     <Modal open={open} onClose={handleClose} title={title} maxWidth={480}>
       {!type && <TypeChooser onChoose={setType} />}
       {type === 'habit' && (
-        <HabitForm onSave={handleSave} onBack={() => setType(null)} defaultDate={defaultDate} initial={editTask} />
+        <HabitForm onSave={handleSave} onBack={isEdit ? handleClose : () => setType(null)} defaultDate={defaultDate} initial={editTask} />
       )}
       {type === 'task' && (
-        <TaskForm onSave={handleSave} onBack={() => setType(null)} defaultDate={defaultDate} initial={editTask} />
+        <TaskForm onSave={handleSave} onBack={isEdit ? handleClose : () => setType(null)} defaultDate={defaultDate} initial={editTask} />
       )}
     </Modal>
   )

@@ -36,47 +36,95 @@ export function AppShell({ user, dark, onToggleTheme, onLogout, tasks, taskLoadi
 
   const { addTask, updateTask, toggleTask, updateTaskValue, updateSubtasks, deleteTask, clearAll } = taskActions
 
+  // ── Pede permissão de notificação ao montar (nativo + web) ───────────
+  useEffect(() => {
+    const requestPerms = async () => {
+      // Nativo (Capacitor/Android)
+      if (window.Capacitor?.isNativePlatform?.()) {
+        try {
+          const { LocalNotifications } = await import('@capacitor/local-notifications')
+          await LocalNotifications.requestPermissions()
+        } catch {}
+        return
+      }
+      // Web
+      if (typeof window !== 'undefined' && 'Notification' in window &&
+          window.Notification.permission === 'default') {
+        try { await window.Notification.requestPermission() } catch {}
+      }
+    }
+    requestPerms()
+  }, [])
+
   // ── Time-based alarm checker — runs every 30s ──────────────────────────
   useEffect(() => {
-    const checkAlarms = () => {
-      if ((window.Notification?.permission ?? 'not_supported') !== 'granted') return
-      const now  = new Date()
-      const hhmm = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`
+    const isNative = window.Capacitor?.isNativePlatform?.()
+
+    const checkAlarms = async () => {
+      // Na web: verifica permissão. No nativo: sempre prossegue
+      if (!isNative) {
+        const perm = window.Notification?.permission ?? 'not_supported'
+        if (perm !== 'granted') return
+      }
+
+      const now   = new Date()
+      const hhmm  = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`
       const today = todayKey()
+      const dow   = now.getDay()
 
       tasks.forEach(task => {
         if (task.alert === 'none' || !task.alert) return
         if (task.done) return
         if (!task.time || task.time === '—') return
-
-        // Only fire for today's tasks (habits show every day, tasks from their start date)
-        const isToday = task.date === today ||
-          task.frequencyType === 'daily' ||
-          task.frequencyType === 'specific_days' ||
-          task.frequencyType === 'daily_until_done'
-
-        if (!isToday) return
         if (task.time !== hhmm) return
 
-        // Prevent double-firing in the same minute
+        // Verifica se a tarefa é de hoje
+        const ft = task.frequencyType
+        let isToday = false
+        if (ft === 'daily')           isToday = true
+        else if (ft === 'daily_until_done') isToday = task.date <= today
+        else if (ft === 'specific_days')    isToday = task.frequencyDays?.map(Number).includes(dow)
+        else if (ft === 'weekly')           isToday = new Date(task.date + 'T12:00:00').getDay() === dow
+        else if (ft === 'monthly')          isToday = new Date(task.date + 'T12:00:00').getDate() === now.getDate()
+        else                                isToday = task.date === today
+
+        if (!isToday) return
+
         const key = `${task.id}-${today}-${hhmm}`
         if (firedRef.current.has(key)) return
         firedRef.current.add(key)
 
-        // Fire based on alert type
+        // Dispara notificação
         if (task.alert === 'system' || task.alert === 'both') {
-          fireSystemNotification(`⏰ ${task.name}`, `Hora do seu hábito/tarefa agora!`)
+          if (isNative) {
+            import('@capacitor/local-notifications').then(({ LocalNotifications }) => {
+              LocalNotifications.schedule({ notifications: [{
+                id:    Math.floor(Math.random() * 1_000_000),
+                title: `⏰ ${task.name}`,
+                body:  'Hora do seu hábito/tarefa!',
+                schedule: { at: new Date(Date.now() + 500) },
+                sound: 'alarm.mp3',
+                iconColor: '#7c3aed',
+                actionTypeId: '',
+                extra: null,
+              }]})
+            }).catch(() => {})
+          } else {
+            fireSystemNotification(`⏰ ${task.name}`, `Hora do seu hábito/tarefa agora!`)
+          }
         }
+
+        // Dispara alarme sonoro / modal
         if (task.alert === 'alarm' || task.alert === 'both') {
-          setAlarmTask(task) // show alarm screen
+          setAlarmTask(task)
         }
       })
     }
 
-    checkAlarms() // run immediately on mount
-    const id = setInterval(checkAlarms, 30_000) // check every 30s
+    checkAlarms()
+    const id = setInterval(checkAlarms, 30_000)
     return () => clearInterval(id)
-  }, [tasks]) // re-registers when tasks change
+  }, [tasks])
 
   // ── Handlers ────────────────────────────────────────────────────────────
   const handleSaveTask = useCallback(async task => {

@@ -35,43 +35,27 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # ── 1. Cria .env com secrets do GitHub ───────────────────────────────
       - name: Create .env file
         run: |
           echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}" >> .env
           echo "VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}" >> .env
-          echo "✓ .env created"
 
-      # ── 2. Build web ──────────────────────────────────────────────────────
-      - name: Build web app (Vite)
+      - name: Build web app
         run: npm run build
 
-      # ── 2. Verifica que o dist tem conteúdo ───────────────────────────────
-      - name: Verify dist contents
-        run: |
-          echo "dist/ contents:"
-          ls -la dist/
-          echo "dist/assets/ count: $(ls dist/assets/ | wc -l) files"
-
-      # ── 3. Capacitor: add android se não existir, depois sync ─────────────
       - name: Capacitor add + sync android
         run: |
           if [ ! -d "android" ]; then
-            echo "android/ not found — running cap add android"
             npx cap add android
-          else
-            echo "android/ found — skipping cap add"
           fi
           npx cap sync android
 
-      # ── 4. Alarm sound ────────────────────────────────────────────────────
-      - name: Copy alarm sound to res/raw
+      - name: Copy alarm sound
         run: |
           mkdir -p android/app/src/main/res/raw
           cp public/alarm.mp3 android/app/src/main/res/raw/alarm.mp3
 
-      # ── 5. Gera ícones do app (mipmap) a partir do icon-512.png ──────────
-      - name: Install Pillow for icon generation
+      - name: Install Pillow
         run: pip install Pillow --break-system-packages -q
 
       - name: Generate Android launcher icons
@@ -81,15 +65,10 @@ jobs:
           import os
 
           src = Image.open("public/icon-512.png").convert("RGBA")
-
           sizes = {
-            "mipmap-mdpi":    48,
-            "mipmap-hdpi":    72,
-            "mipmap-xhdpi":   96,
-            "mipmap-xxhdpi":  144,
-            "mipmap-xxxhdpi": 192,
+            "mipmap-mdpi": 48, "mipmap-hdpi": 72,
+            "mipmap-xhdpi": 96, "mipmap-xxhdpi": 144, "mipmap-xxxhdpi": 192,
           }
-
           base = "android/app/src/main/res"
           for folder, size in sizes.items():
             path = f"{base}/{folder}"
@@ -97,54 +76,29 @@ jobs:
             icon = src.resize((size, size), Image.LANCZOS)
             icon.save(f"{path}/ic_launcher.png", "PNG")
             icon.save(f"{path}/ic_launcher_round.png", "PNG")
-            print(f"✓ {folder}: {size}x{size}")
-
-          # Foreground for adaptive icon (same image with padding)
-          for folder, size in sizes.items():
-            path = f"{base}/{folder}"
-            fg_size = int(size * 1.0)
-            padded = Image.new("RGBA", (int(fg_size*1.5), int(fg_size*1.5)), (0,0,0,0))
-            icon = src.resize((fg_size, fg_size), Image.LANCZOS)
-            offset = int(fg_size * 0.25)
-            padded.paste(icon, (offset, offset), icon)
-            padded = padded.resize((int(fg_size*1.5), int(fg_size*1.5)), Image.LANCZOS)
-            padded.save(f"{path}/ic_launcher_foreground.png", "PNG")
-
-          print("✓ All icons generated")
+            fg = Image.new("RGBA", (int(size*1.5), int(size*1.5)), (0,0,0,0))
+            fg.paste(icon, (int(size*0.25), int(size*0.25)), icon)
+            fg.save(f"{path}/ic_launcher_foreground.png", "PNG")
+            print(f"✓ {folder} {size}px")
           PYEOF
 
-      # ── 6. Adaptive icon XML ──────────────────────────────────────────────
-      - name: Create adaptive icon XMLs
+      - name: Write adaptive icon XMLs
         run: |
           mkdir -p android/app/src/main/res/mipmap-anydpi-v26
 
-          cat > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml << 'XML'
-          <?xml version="1.0" encoding="utf-8"?>
-          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-            <background android:drawable="@color/ic_launcher_background"/>
-            <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
-          </adaptive-icon>
-          XML
+          printf '<?xml version="1.0" encoding="utf-8"?>\n<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n  <background android:drawable="@color/ic_launcher_background"/>\n  <foreground android:drawable="@mipmap/ic_launcher_foreground"/>\n</adaptive-icon>\n' \
+            > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
 
-          cat > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml << 'XML'
-          <?xml version="1.0" encoding="utf-8"?>
-          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-            <background android:drawable="@color/ic_launcher_background"/>
-            <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
-          </adaptive-icon>
-          XML
+          cp android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml \
+             android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
 
-          # Background color = dark purple matching the icon
-          mkdir -p android/app/src/main/res/values
-          # Only add if not already there
-          if ! grep -q "ic_launcher_background" android/app/src/main/res/values/colors.xml 2>/dev/null; then
-            echo '<resources><color name="ic_launcher_background">#0A0418</color></resources>' \
-              > android/app/src/main/res/values/ic_launcher_colors.xml
-          fi
+          # SOBRESCREVE o ic_launcher_background.xml que já existe no repo
+          # Não cria arquivo novo — arquivo novo causaria "Duplicate resources"
+          printf '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">#0A0418</color>\n</resources>\n' \
+            > android/app/src/main/res/values/ic_launcher_background.xml
 
-          echo "✓ Adaptive icon XMLs created"
+          echo "✓ XMLs written to existing files"
 
-      # ── 7. Build APK ──────────────────────────────────────────────────────
       - name: Make Gradle executable
         run: chmod +x android/gradlew
 
@@ -152,12 +106,10 @@ jobs:
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon
 
-      # ── 8. Rename + upload ────────────────────────────────────────────────
       - name: Rename APK
         run: |
           cp android/app/build/outputs/apk/debug/app-debug.apk \
              android/app/build/outputs/apk/debug/HabitLife.apk
-          echo "APK size: $(du -sh android/app/build/outputs/apk/debug/HabitLife.apk)"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -180,13 +132,10 @@ jobs:
           name: "HabitLife — Última versão"
           body: |
             ## 📱 HabitLife
-
-            **Como instalar:**
-            1. Baixe o `HabitLife.apk` abaixo
+            1. Baixe o `HabitLife.apk`
             2. Android: Configurações → Segurança → Permitir fontes desconhecidas
-            3. Abra e instale
-
-            > Build #${{ github.run_number }} · commit `${{ github.sha }}`
+            3. Instale
+            > Build #${{ github.run_number }} · `${{ github.sha }}`
           files: android/app/build/outputs/apk/debug/HabitLife.apk
           make_latest: true
         env:
