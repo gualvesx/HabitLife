@@ -12,6 +12,7 @@ import { SettingsPage }  from './SettingsPage'
 import { capitalize }    from '../utils/capitalize'
 import { fireSystemNotification } from '../hooks/useTasks'
 import { todayKey }      from '../utils/date'
+import { requestAlarmPermissions, fireAlarmNow } from '../hooks/useNativeAlarm'
 import s from './AppShell.module.css'
 
 const PAGE_TITLES = {

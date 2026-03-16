@@ -1,10 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
 
-const url = import.meta.env.VITE_SUPABASE_URL
-const key = import.meta.env.VITE_SUPABASE_ANON_KEY
+const url = import.meta.env.VITE_SUPABASE_URL || ''
+const key = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
+// Loga aviso mas não lança erro — evita tela preta no APK se .env não foi embutido
 if (!url || !key) {
-  throw new Error('Supabase env vars missing: VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY')
+  console.error('⚠️ Supabase env vars missing. Verifique os secrets VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no GitHub Actions.')
 }
 
 // iOS Safari (especially private mode) can block localStorage entirely.
