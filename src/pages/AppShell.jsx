@@ -12,7 +12,7 @@ import { SettingsPage }  from './SettingsPage'
 import { capitalize }    from '../utils/capitalize'
 import { fireSystemNotification } from '../hooks/useTasks'
 import { todayKey }      from '../utils/date'
-import { requestAlarmPermissions, fireAlarmNow } from '../hooks/useNativeAlarm'
+import { requestAlarmPermissions, fireAlarmNow, scheduleTaskAlarms } from '../hooks/useNativeAlarm'
 import s from './AppShell.module.css'
 
 const PAGE_TITLES = {
@@ -105,6 +105,7 @@ export function AppShell({ user, dark, onToggleTheme, onLogout, tasks, taskLoadi
   const handleEditSave = useCallback(async task => {
     if (!editTask) return
     await updateTask({ ...task, id: editTask.id })
+    scheduleTaskAlarms(task).catch(() => {})
     setEditOpen(false)
     setEditTask(null)
   }, [editTask, updateTask])

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { scheduleTaskNotifications } from './useNativeAlarm'
+import { scheduleTaskAlarms } from './useNativeAlarm'
 import { supabase } from '../utils/supabase'
 
 // ── DB row ↔ app task ──────────────────────────────────────────────────────
@@ -275,7 +275,7 @@ export function useTasks(userId) {
     if (!error && data) {
       const newTask = fromDB(data)
       setTasks(prev => [...prev, newTask])
-      scheduleTaskNotifications(newTask)
+      scheduleTaskAlarms(newTask).catch(() => {})
     }
   }, [userId])
 
