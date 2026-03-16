@@ -448,7 +448,7 @@ export function LandingPage({ onEnter }) {
 
           {/* ── Android download pill ── */}
           <a
-            href="https://github.com/gualvesx/HabitLife/releases/latest/download/HabitLife.apk"
+            href="/downloads/HabitLife.apk"
             className={s.androidBadge}
             download
           >
@@ -567,7 +567,7 @@ export function LandingPage({ onEnter }) {
           <p className={s.ctaMicro}>Gratuito. Sem cartão. Dados seguros.</p>
 
           <a
-            href="https://github.com/gualvesx/HabitLife/releases/latest/download/HabitLife.apk"
+            href="/downloads/HabitLife.apk"
             className={s.ctaAndroid}
             download
           >
