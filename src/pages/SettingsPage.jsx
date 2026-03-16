@@ -20,7 +20,8 @@ export function SettingsPage({ dark, onToggleTheme, user, tasks, clearAllTasks, 
   const [isInstalled,    setIsInstalled]    = useState(
     window.matchMedia('(display-mode: standalone)').matches || !!window.navigator.standalone
   )
-  const [isIOS, setIsIOS] = useState(/iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream)
+  const [isIOS,    setIsIOS]    = useState(/iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream)
+  const [isAndroid, setIsAndroid] = useState(/android/i.test(navigator.userAgent))
   const [installMsg, setInstallMsg] = useState(null)
 
   useEffect(() => {
@@ -189,13 +190,17 @@ export function SettingsPage({ dark, onToggleTheme, user, tasks, clearAllTasks, 
           <div className={s.cardTitle}>Instalar app</div>
           <div className={s.dataRow}>
             <div>
-              <div className={s.dataLbl}>HabitLife como aplicativo</div>
+              <div className={s.dataLbl}>
+                {isAndroid ? 'Baixar para Android' : isIOS ? 'Adicionar à tela inicial' : 'HabitLife como aplicativo'}
+              </div>
               <div className={s.dataSub}>
-                {isIOS
-                  ? 'Adicione à tela de início pelo menu do Safari'
-                  : installPrompt
-                    ? 'Instale para acesso rápido, offline e notificações melhores'
-                    : 'Abra no Chrome ou Edge para instalar como app'}
+                {isAndroid
+                  ? 'Instale o APK para usar offline, com alarmes nativos e sem navegador'
+                  : isIOS
+                    ? 'Toque em  → "Adicionar à Tela de Início" no Safari'
+                    : installPrompt
+                      ? 'Instale para acesso rápido, offline e notificações melhores'
+                      : 'Abra no Chrome ou Edge para instalar como app'}
               </div>
               {installMsg && (
                 <div className={[s.testMsg, installMsg.ok ? s.testOk : s.testErr].join(' ')} style={{ marginTop: 6 }}>
@@ -203,14 +208,24 @@ export function SettingsPage({ dark, onToggleTheme, user, tasks, clearAllTasks, 
                 </div>
               )}
             </div>
-            <Button
-              size="sm"
-              variant={installPrompt || isIOS ? 'primary' : 'outline'}
-              disabled={!installPrompt && !isIOS}
-              icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>}
-              onClick={handleInstall}>
-              {isIOS ? 'Como instalar' : 'Instalar'}
-            </Button>
+            {isAndroid ? (
+              <a
+                href="/downloads/HabitLife.apk"
+                download="HabitLife.apk"
+                className={s.apkBtn}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Baixar APK
+              </a>
+            ) : (
+              <Button
+                size="sm"
+                variant={installPrompt || isIOS ? 'primary' : 'outline'}
+                disabled={!installPrompt && !isIOS}
+                icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>}
+                onClick={handleInstall}>
+                {isIOS ? 'Como instalar' : 'Instalar'}
+              </Button>
+            )}
           </div>
         </Card>
       )}

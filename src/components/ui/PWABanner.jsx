@@ -1,34 +1,48 @@
 import { useState, useEffect } from 'react'
 import s from './PWABanner.module.css'
 
+const isMobileDevice = () =>
+  /android|iphone|ipad|ipod/i.test(navigator.userAgent)
+
+const APK_URL = '/downloads/HabitLife.apk'
+
 export function PWABanner() {
-  const [show,   setShow]   = useState(false)
-  const [prompt, setPrompt] = useState(null)
-  const [isIOS,  setIsIOS]  = useState(false)
+  const [show,    setShow]   = useState(false)
+  const [prompt,  setPrompt] = useState(null)
+  const [isMobile, setMobile] = useState(false)
+  const [isAndroid, setAndroid] = useState(false)
+  const [isIOS,   setIsIOS]  = useState(false)
 
   useEffect(() => {
+    // Already installed as PWA — hide banner
     if (window.matchMedia('(display-mode: standalone)').matches) return
     if (window.navigator.standalone) return
     if (sessionStorage.getItem('pwa_dismissed')) return
 
-    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream
+    const ua      = navigator.userAgent
+    const android = /android/i.test(ua)
+    const ios     = /iphone|ipad|ipod/i.test(ua) && !window.MSStream
+    const mobile  = android || ios
+
+    setMobile(mobile)
+    setAndroid(android)
     setIsIOS(ios)
 
-    if (ios) {
-      const t = setTimeout(() => setShow(true), 1500)
+    if (mobile) {
+      // On mobile always show the banner after a short delay
+      const t = setTimeout(() => setShow(true), 1200)
       return () => clearTimeout(t)
     }
 
-    // Check if already captured globally before React mounted
+    // Desktop: only show PWA install prompt
     if (window.__pwaInstallPrompt) {
       setPrompt(window.__pwaInstallPrompt)
       setShow(true)
       return
     }
-
-    // Listen for late-arriving event
-    const handler = e => { setPrompt(e); setShow(true) }
-    window.addEventListener('pwaPromptReady', e => handler(e.detail))
+    const handler = e => { setPrompt(e.detail); setShow(true) }
+    window.addEventListener('pwaPromptReady', handler)
+    return () => window.removeEventListener('pwaPromptReady', handler)
   }, [])
 
   const handleInstall = async () => {
@@ -47,25 +61,71 @@ export function PWABanner() {
 
   if (!show) return null
 
+  // ── Android: show APK download ─────────────────────────────────────────
+  if (isAndroid) {
+    return (
+      <div className={s.banner}>
+        <div className={s.left}>
+          <img src="/logo.svg" alt="HabitLife" className={s.icon} />
+          <div className={s.text}>
+            <span className={s.title}>Instalar HabitLife</span>
+            <span className={s.sub}>Baixe o app e use offline com alarmes nativos</span>
+          </div>
+        </div>
+        <div className={s.actions}>
+          <a className={s.installBtn} href={APK_URL} download="HabitLife.apk">
+            Baixar app
+          </a>
+          <button className={s.closeBtn} onClick={handleDismiss} aria-label="Fechar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // ── iOS: show Add to Home Screen instructions ──────────────────────────
+  if (isIOS) {
+    return (
+      <div className={s.banner}>
+        <div className={s.left}>
+          <img src="/logo.svg" alt="HabitLife" className={s.icon} />
+          <div className={s.text}>
+            <span className={s.title}>Adicionar à tela inicial</span>
+            <span className={s.sub}>Toque em  → "Adicionar à Tela de Início"</span>
+          </div>
+        </div>
+        <div className={s.actions}>
+          <button className={s.closeBtn} onClick={handleDismiss} aria-label="Fechar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Desktop: PWA install ───────────────────────────────────────────────
   return (
     <div className={s.banner}>
       <div className={s.left}>
         <img src="/logo.svg" alt="HabitLife" className={s.icon} />
         <div className={s.text}>
           <span className={s.title}>Instalar HabitLife</span>
-          <span className={s.sub}>
-            {isIOS
-              ? 'Toque em  e "Adicionar à Tela de Início"'
-              : 'Instale para acesso rápido, offline e notificações'}
-          </span>
+          <span className={s.sub}>Acesso rápido, offline e notificações</span>
         </div>
       </div>
       <div className={s.actions}>
-        {!isIOS && (
-          <button className={s.installBtn} onClick={handleInstall}>
-            {prompt ? 'Instalar app' : 'Como instalar?'}
-          </button>
-        )}
+        <button className={s.installBtn} onClick={handleInstall}>
+          {prompt ? 'Instalar' : 'Como instalar?'}
+        </button>
         <button className={s.closeBtn} onClick={handleDismiss} aria-label="Fechar">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">

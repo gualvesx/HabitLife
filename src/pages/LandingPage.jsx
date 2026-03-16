@@ -446,6 +446,17 @@ export function LandingPage({ onEnter }) {
             </button>
           </div>
 
+          {/* ── Android download pill ── */}
+          <a
+            href="https://github.com/gualvesx/HabitLife/releases/latest/download/HabitLife.apk"
+            className={s.androidBadge}
+            download
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.341a5 5 0 1 0-11.046 0H3v1a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-1h-3.477zM8.5 9a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm7 0a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zM6.94 3.44l1.5-2.598a.25.25 0 0 1 .433.25L7.5 3.25A6.014 6.014 0 0 1 12 2a6.014 6.014 0 0 1 4.5 1.25l-1.373-2.158a.25.25 0 0 1 .433-.25l1.5 2.598A6.001 6.001 0 0 1 18 8H6a6.001 6.001 0 0 1 .94-4.56z"/></svg>
+            <span>Baixar para Android</span>
+            <span className={s.androidBadgeSub}>APK gratuito · v{new Date().getFullYear()}</span>
+          </a>
+
           <div className={s.heroScroll}>
             <div className={s.scrollLine} />
             <span>Role para explorar</span>
@@ -554,6 +565,15 @@ export function LandingPage({ onEnter }) {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </button>
           <p className={s.ctaMicro}>Gratuito. Sem cartão. Dados seguros.</p>
+
+          <a
+            href="https://github.com/gualvesx/HabitLife/releases/latest/download/HabitLife.apk"
+            className={s.ctaAndroid}
+            download
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.341a5 5 0 1 0-11.046 0H3v1a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-1h-3.477zM8.5 9a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm7 0a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zM6.94 3.44l1.5-2.598a.25.25 0 0 1 .433.25L7.5 3.25A6.014 6.014 0 0 1 12 2a6.014 6.014 0 0 1 4.5 1.25l-1.373-2.158a.25.25 0 0 1 .433-.25l1.5 2.598A6.001 6.001 0 0 1 18 8H6a6.001 6.001 0 0 1 .94-4.56z"/></svg>
+            Também disponível como APK Android
+          </a>
         </div>
       </section>
 

@@ -1,0 +1,93 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Capacitor sync android
+        run: npx cap sync android
+
+      - name: Copy alarm sound to Android res/raw
+        run: |
+          mkdir -p android/app/src/main/res/raw
+          cp public/alarm.mp3 android/app/src/main/res/raw/alarm.mp3
+
+      - name: Make Gradle executable
+        run: chmod +x android/gradlew
+
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      # Nome FIXO = HabitLife.apk → link /latest/download/HabitLife.apk sempre funciona
+      - name: Rename APK (nome fixo)
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk \
+             android/app/build/outputs/apk/debug/HabitLife.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HabitLife-APK-${{ github.run_number }}
+          path: android/app/build/outputs/apk/debug/HabitLife.apk
+          retention-days: 90
+
+      - name: Create tag
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -f "latest"
+          git push origin "latest" --force
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: "HabitLife — Última versão"
+          body: |
+            ## 📱 HabitLife
+
+            **Como instalar:**
+            1. Baixe o `HabitLife.apk` abaixo
+            2. No Android: Configurações → Segurança → Permitir fontes desconhecidas
+            3. Abra o arquivo e instale
+
+            > Build #${{ github.run_number }} · commit `${{ github.sha }}`
+          files: android/app/build/outputs/apk/debug/HabitLife.apk
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
