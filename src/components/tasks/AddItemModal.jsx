@@ -111,10 +111,20 @@ function HabitForm({ onSave, onBack, defaultDate, initial }) {
       ? initial.frequencyDays.map(Number)
       : []
   )
-  const [time,  setTime]  = useState(initial?.time === '—' ? '' : (initial?.time || ''))
+  const [time,      setTime]      = useState(initial?.time === '—' ? '' : (initial?.time || ''))
+  const [reminder,  setReminder]  = useState(initial?.reminders?.[0] || '')
+  const [customTime,setCustomTime]= useState('')
+  const [showCustom,setShowCustom]= useState(false)
   const [goal,  setGoal]  = useState(initial?.goalValue || 0)
   const [unit,  setUnit]  = useState(initial?.goalUnit  || '')
   const [notif, setNotif] = useState(initial?.alert     || 'none')
+
+  const handleReminderPickH = id => {
+    if (id === 'custom') { setShowCustom(true); return }
+    setShowCustom(false)
+    setReminder(reminder === id ? '' : id)
+  }
+  const effectiveReminderH = showCustom ? customTime : reminder
 
   const toggleDay = d => setDays(prev =>
     prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d]
@@ -147,7 +157,7 @@ function HabitForm({ onSave, onBack, defaultDate, initial }) {
       desc:              '',
       project:           '',
       subtasks:          [],
-      reminders:         [],
+      reminders:         effectiveReminderH ? [effectiveReminderH] : [],
       endDate:           null,
     })
   }
@@ -238,6 +248,38 @@ function HabitForm({ onSave, onBack, defaultDate, initial }) {
           )}
         </div>
       </div>
+
+      {/* Lembrete diário */}
+      {time && (
+        <div>
+          <div className={s.label}>Lembrete (opcional)</div>
+          <div className={s.reminderGrid}>
+            {REMINDER_OPTS.map(r => (
+              <button key={r.id} type="button"
+                className={[s.reminderBtn,
+                  (r.id !== 'custom' && reminder === r.id && !showCustom) ||
+                  (r.id === 'custom' && showCustom) ? s.reminderActive : ''
+                ].join(' ')}
+                onClick={() => handleReminderPickH(r.id)}>
+                {r.label}
+              </button>
+            ))}
+          </div>
+          {showCustom && (
+            <div style={{ marginTop: 8 }}>
+              <Input label="Horário personalizado" type="time" value={customTime}
+                onChange={e => setCustomTime(e.target.value)} />
+            </div>
+          )}
+          {effectiveReminderH && (
+            <div className={s.reminderSet}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              Lembrete às {effectiveReminderH} todos os dias
+              <button className={s.reminderClear} onClick={() => { setReminder(''); setShowCustom(false); setCustomTime('') }}>×</button>
+            </div>
+          )}
+        </div>
+      )}
 
       <NotifPicker value={notif} onChange={setNotif} />
 

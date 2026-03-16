@@ -10,6 +10,7 @@ import { AppShell }       from './pages/AppShell'
 import { TermosPage }     from './pages/TermosPage'
 import { PrivacidadePage } from './pages/PrivacidadePage'
 import s from './App.module.css'
+import { requestAlarmPermissions } from './hooks/useNativeAlarm'
 
 function Splash() {
   return (
@@ -50,7 +51,11 @@ export default function App() {
 
   // When user logs in (user goes from null → value), make sure we're ready
   useEffect(() => {
-    if (auth.user) setReady(true)
+    if (auth.user) {
+      setReady(true)
+      // Pede permissões de notificação e alarme logo após login
+      requestAlarmPermissions()
+    }
   }, [auth.user])
 
   // Show splash only while genuinely waiting for initial session check
