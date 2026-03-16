@@ -50,84 +50,8 @@ jobs:
           fi
           npx cap sync android
 
-      # ── Configura canal de alarme nativo no MainActivity ─────────────────
-      - name: Configure alarm notification channel in MainActivity
-        run: |
-          MAIN="android/app/src/main/java/com/habitlife/app/MainActivity.java"
-          cat > "$MAIN" << 'JAVAEOF'
-          package com.habitlife.app;
-
-          import android.app.NotificationChannel;
-          import android.app.NotificationManager;
-          import android.media.AudioAttributes;
-          import android.media.RingtoneManager;
-          import android.net.Uri;
-          import android.os.Build;
-          import android.os.Bundle;
-          import com.getcapacitor.BridgeActivity;
-
-          public class MainActivity extends BridgeActivity {
-            @Override
-            public void onCreate(Bundle savedInstanceState) {
-              super.onCreate(savedInstanceState);
-              if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                createAlarmChannel();
-              }
-            }
-
-            private void createAlarmChannel() {
-              NotificationManager nm = getSystemService(NotificationManager.class);
-
-              // Canal de ALARME — toca mesmo com DND, prioridade máxima
-              NotificationChannel alarm = new NotificationChannel(
-                "habitlife_alarm",
-                "Alarmes HabitLife",
-                NotificationManager.IMPORTANCE_HIGH
-              );
-              alarm.setDescription("Alarmes de hábitos e tarefas");
-              alarm.enableVibration(true);
-              alarm.setVibrationPattern(new long[]{0, 500, 200, 500, 200, 800});
-              alarm.setShowBadge(true);
-              alarm.setBypassDnd(true);
-
-              Uri alarmUri = Uri.parse(
-                "android.resource://" + getPackageName() + "/raw/alarm"
-              );
-              AudioAttributes audioAttr = new AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_ALARM)
-                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                .build();
-              alarm.setSound(alarmUri, audioAttr);
-              nm.createNotificationChannel(alarm);
-
-              // Canal de NOTIFICAÇÃO normal
-              NotificationChannel notif = new NotificationChannel(
-                "habitlife_notif",
-                "Lembretes HabitLife",
-                NotificationManager.IMPORTANCE_DEFAULT
-              );
-              notif.setDescription("Lembretes de hábitos e tarefas");
-              nm.createNotificationChannel(notif);
-            }
-          }
-          JAVAEOF
-          echo "✓ MainActivity.java written"
-
-      # ── Adiciona permissões de alarme exato no AndroidManifest ────────────
-      - name: Add exact alarm permissions to AndroidManifest
-        run: |
-          MANIFEST="android/app/src/main/AndroidManifest.xml"
-          # Adiciona permissões antes de <application se ainda não existirem
-          if ! grep -q "SCHEDULE_EXACT_ALARM" "$MANIFEST"; then
-            sed -i 's|<application|<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
-    <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <application|' "$MANIFEST"
-            echo "✓ permissions added"
-          else
-            echo "✓ permissions already present"
-          fi
+      - name: Configure MainActivity and permissions
+        run: python3 scripts/setup_android.py
 
       - name: Copy alarm sound
         run: |
@@ -137,46 +61,8 @@ jobs:
       - name: Install Pillow
         run: pip install Pillow --break-system-packages -q
 
-      - name: Generate Android launcher icons
-        run: |
-          python3 << 'PYEOF'
-          from PIL import Image
-          import os
-
-          src = Image.open("public/icon-512.png").convert("RGBA")
-          sizes = {
-            "mipmap-mdpi": 48, "mipmap-hdpi": 72,
-            "mipmap-xhdpi": 96, "mipmap-xxhdpi": 144, "mipmap-xxxhdpi": 192,
-          }
-          base = "android/app/src/main/res"
-          for folder, size in sizes.items():
-            path = f"{base}/{folder}"
-            os.makedirs(path, exist_ok=True)
-            icon = src.resize((size, size), Image.LANCZOS)
-            icon.save(f"{path}/ic_launcher.png", "PNG")
-            icon.save(f"{path}/ic_launcher_round.png", "PNG")
-            fg = Image.new("RGBA", (int(size*1.5), int(size*1.5)), (0,0,0,0))
-            fg.paste(icon, (int(size*0.25), int(size*0.25)), icon)
-            fg.save(f"{path}/ic_launcher_foreground.png", "PNG")
-            print(f"✓ {folder} {size}px")
-          PYEOF
-
-      - name: Write adaptive icon XMLs
-        run: |
-          mkdir -p android/app/src/main/res/mipmap-anydpi-v26
-
-          printf '<?xml version="1.0" encoding="utf-8"?>\n<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n  <background android:drawable="@color/ic_launcher_background"/>\n  <foreground android:drawable="@mipmap/ic_launcher_foreground"/>\n</adaptive-icon>\n' \
-            > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
-
-          cp android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml \
-             android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
-
-          # SOBRESCREVE o ic_launcher_background.xml que já existe no repo
-          # Não cria arquivo novo — arquivo novo causaria "Duplicate resources"
-          printf '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">#0A0418</color>\n</resources>\n' \
-            > android/app/src/main/res/values/ic_launcher_background.xml
-
-          echo "✓ XMLs written to existing files"
+      - name: Generate launcher icons
+        run: python3 scripts/generate_icons.py
 
       - name: Make Gradle executable
         run: chmod +x android/gradlew
@@ -210,11 +96,11 @@ jobs:
           tag_name: latest
           name: "HabitLife — Última versão"
           body: |
-            ## 📱 HabitLife
-            1. Baixe o `HabitLife.apk`
-            2. Android: Configurações → Segurança → Permitir fontes desconhecidas
+            ## HabitLife
+            1. Baixe o HabitLife.apk
+            2. Android: Configurações > Segurança > Permitir fontes desconhecidas
             3. Instale
-            > Build #${{ github.run_number }} · `${{ github.sha }}`
+            > Build ${{ github.run_number }}
           files: android/app/build/outputs/apk/debug/HabitLife.apk
           make_latest: true
         env:
