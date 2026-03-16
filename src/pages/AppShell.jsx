@@ -36,25 +36,8 @@ export function AppShell({ user, dark, onToggleTheme, onLogout, tasks, taskLoadi
 
   const { addTask, updateTask, toggleTask, updateTaskValue, updateSubtasks, deleteTask, clearAll } = taskActions
 
-  // ── Pede permissão de notificação ao montar (nativo + web) ───────────
-  useEffect(() => {
-    const requestPerms = async () => {
-      // Nativo (Capacitor/Android)
-      if (window.Capacitor?.isNativePlatform?.()) {
-        try {
-          const { LocalNotifications } = await import('@capacitor/local-notifications')
-          await LocalNotifications.requestPermissions()
-        } catch {}
-        return
-      }
-      // Web
-      if (typeof window !== 'undefined' && 'Notification' in window &&
-          window.Notification.permission === 'default') {
-        try { await window.Notification.requestPermission() } catch {}
-      }
-    }
-    requestPerms()
-  }, [])
+  // ── Pede permissão de alarme/notificação ao montar ────────────────────
+  useEffect(() => { requestAlarmPermissions() }, [])
 
   // ── Time-based alarm checker — runs every 30s ──────────────────────────
   useEffect(() => {
@@ -94,29 +77,15 @@ export function AppShell({ user, dark, onToggleTheme, onLogout, tasks, taskLoadi
         if (firedRef.current.has(key)) return
         firedRef.current.add(key)
 
-        // Dispara notificação
+        // Dispara notificação / alarme
         if (task.alert === 'system' || task.alert === 'both') {
-          if (isNative) {
-            import('@capacitor/local-notifications').then(({ LocalNotifications }) => {
-              LocalNotifications.schedule({ notifications: [{
-                id:    Math.floor(Math.random() * 1_000_000),
-                title: `⏰ ${task.name}`,
-                body:  'Hora do seu hábito/tarefa!',
-                schedule: { at: new Date(Date.now() + 500) },
-                sound: 'alarm.mp3',
-                iconColor: '#7c3aed',
-                actionTypeId: '',
-                extra: null,
-              }]})
-            }).catch(() => {})
-          } else {
-            fireSystemNotification(`⏰ ${task.name}`, `Hora do seu hábito/tarefa agora!`)
-          }
+          fireAlarmNow(`⏰ ${task.name}`, 'Hora do seu hábito/tarefa!')
         }
-
-        // Dispara alarme sonoro / modal
         if (task.alert === 'alarm' || task.alert === 'both') {
-          setAlarmTask(task)
+          // No nativo: notificação de alarme sonora pelo sistema
+          fireAlarmNow(`⏰ ${task.name}`, 'Hora do seu hábito/tarefa!')
+          // No web: também mostra o modal visual
+          if (!isNative) setAlarmTask(task)
         }
       })
     }

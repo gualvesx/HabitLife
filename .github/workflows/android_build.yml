@@ -50,6 +50,85 @@ jobs:
           fi
           npx cap sync android
 
+      # ── Configura canal de alarme nativo no MainActivity ─────────────────
+      - name: Configure alarm notification channel in MainActivity
+        run: |
+          MAIN="android/app/src/main/java/com/habitlife/app/MainActivity.java"
+          cat > "$MAIN" << 'JAVAEOF'
+          package com.habitlife.app;
+
+          import android.app.NotificationChannel;
+          import android.app.NotificationManager;
+          import android.media.AudioAttributes;
+          import android.media.RingtoneManager;
+          import android.net.Uri;
+          import android.os.Build;
+          import android.os.Bundle;
+          import com.getcapacitor.BridgeActivity;
+
+          public class MainActivity extends BridgeActivity {
+            @Override
+            public void onCreate(Bundle savedInstanceState) {
+              super.onCreate(savedInstanceState);
+              if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                createAlarmChannel();
+              }
+            }
+
+            private void createAlarmChannel() {
+              NotificationManager nm = getSystemService(NotificationManager.class);
+
+              // Canal de ALARME — toca mesmo com DND, prioridade máxima
+              NotificationChannel alarm = new NotificationChannel(
+                "habitlife_alarm",
+                "Alarmes HabitLife",
+                NotificationManager.IMPORTANCE_HIGH
+              );
+              alarm.setDescription("Alarmes de hábitos e tarefas");
+              alarm.enableVibration(true);
+              alarm.setVibrationPattern(new long[]{0, 500, 200, 500, 200, 800});
+              alarm.setShowBadge(true);
+              alarm.setBypassDnd(true);
+
+              Uri alarmUri = Uri.parse(
+                "android.resource://" + getPackageName() + "/raw/alarm"
+              );
+              AudioAttributes audioAttr = new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_ALARM)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build();
+              alarm.setSound(alarmUri, audioAttr);
+              nm.createNotificationChannel(alarm);
+
+              // Canal de NOTIFICAÇÃO normal
+              NotificationChannel notif = new NotificationChannel(
+                "habitlife_notif",
+                "Lembretes HabitLife",
+                NotificationManager.IMPORTANCE_DEFAULT
+              );
+              notif.setDescription("Lembretes de hábitos e tarefas");
+              nm.createNotificationChannel(notif);
+            }
+          }
+          JAVAEOF
+          echo "✓ MainActivity.java written"
+
+      # ── Adiciona permissões de alarme exato no AndroidManifest ────────────
+      - name: Add exact alarm permissions to AndroidManifest
+        run: |
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          # Adiciona permissões antes de <application se ainda não existirem
+          if ! grep -q "SCHEDULE_EXACT_ALARM" "$MANIFEST"; then
+            sed -i 's|<application|<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <application|' "$MANIFEST"
+            echo "✓ permissions added"
+          else
+            echo "✓ permissions already present"
+          fi
+
       - name: Copy alarm sound
         run: |
           mkdir -p android/app/src/main/res/raw

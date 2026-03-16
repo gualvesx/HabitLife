@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Icon } from '../constants/icons'
 import { Card } from '../components/ui/Card'
 import { addFocusEntry, getFocusLog } from '../hooks/useTasks'
-import { useNativeAlarm } from '../hooks/useNativeAlarm'
+import { useNativeAlarm, fireAlarmNow } from '../hooks/useNativeAlarm'
 import { CATEGORIES } from '../constants'
 import s from './TimerPage.module.css'
 
@@ -121,7 +121,7 @@ export function TimerPage({ tasks = [], focusTask, setFocusTask }) {
           if (s <= 1) {
             clearInterval(timerRef.current); setRun(false)
             if (mode === 'focus') { incPomoCount(); setPomoCount(getPomoCount()) }
-            fireNow('HabitLife ✓', `${currentMode.label} concluído! Bom trabalho.`)
+            fireAlarmNow('HabitLife ✓', `${currentMode.label} concluído! Bom trabalho.`)
             return 0
           }
           return s - 1

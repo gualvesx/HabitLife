@@ -1,211 +1,244 @@
 /**
- * useNativeAlarm — agendamento de alarmes e notificações
+ * useNativeAlarm
  *
- * • Na plataforma nativa (Android/iOS via Capacitor):
- *   usa @capacitor/local-notifications → toca mesmo com app fechado
+ * Android (Capacitor APK):
+ *   • Usa @capacitor/local-notifications com canal "habitlife_alarm"
+ *   • Canal configurado com USAGE_ALARM + bypassDnd = toca mesmo com app fechado,
+ *     tela bloqueada e modo não perturbe
+ *   • Requer permissão SCHEDULE_EXACT_ALARM (Android 12+)
  *
- * • Na web (navegador):
- *   usa Web Notification API + Web Audio API + vibração
- *   (fallback igual ao comportamento atual)
+ * Web:
+ *   • Fallback com Audio API + Web Audio synthesis + vibração
  */
 
 let _Capacitor = null
-let _LocalNotifications = null
+let _LN        = null
 
-// Importação dinâmica para não quebrar no build web
-async function loadCapacitor() {
-  if (_Capacitor) return { Capacitor: _Capacitor, LocalNotifications: _LocalNotifications }
+async function loadCap() {
+  if (_Capacitor) return { Capacitor: _Capacitor, LN: _LN }
   try {
-    const core  = await import('@capacitor/core')
-    const notif = await import('@capacitor/local-notifications')
-    _Capacitor           = core.Capacitor
-    _LocalNotifications  = notif.LocalNotifications
+    const { Capacitor }          = await import('@capacitor/core')
+    const { LocalNotifications } = await import('@capacitor/local-notifications')
+    _Capacitor = Capacitor
+    _LN        = LocalNotifications
   } catch {
     _Capacitor = { isNativePlatform: () => false }
-    _LocalNotifications = null
+    _LN        = null
   }
-  return { Capacitor: _Capacitor, LocalNotifications: _LocalNotifications }
+  return { Capacitor: _Capacitor, LN: _LN }
 }
 
-// ── Web fallback: play alarm.mp3 + synthesis + vibrate ─────────────────────
-function _webAlarm() {
-  // Try MP3
+function uniqueId() { return Math.floor(Math.random() * 2_000_000_000) }
+
+// ── Web fallbacks ───────────────────────────────────────────────────────────
+function _webVibrate() {
+  if ('vibrate' in navigator) navigator.vibrate([400, 150, 400, 150, 800])
+}
+
+function _webSound() {
   try {
-    const audio = new Audio('/alarm.mp3')
-    audio.volume = 1.0
-    audio.play().catch(() => _synthAlarm())
-  } catch { _synthAlarm() }
-  // Vibrate
-  if ('vibrate' in navigator) navigator.vibrate([400, 150, 400, 150, 600])
+    const a = new Audio('/alarm.mp3')
+    a.volume = 1.0
+    a.play().catch(_synthSound)
+  } catch { _synthSound() }
 }
 
-function _synthAlarm() {
+function _synthSound() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)()
-    const play = (freq, t0, dur) => {
+    const beep = (f, t, d) => {
       const o = ctx.createOscillator(), g = ctx.createGain()
       o.connect(g); g.connect(ctx.destination)
-      o.type = 'square'; o.frequency.value = freq
-      g.gain.setValueAtTime(0, t0)
-      g.gain.linearRampToValueAtTime(0.35, t0 + 0.02)
-      g.gain.exponentialRampToValueAtTime(0.001, t0 + dur)
-      o.start(t0); o.stop(t0 + dur + 0.05)
+      o.type = 'square'; o.frequency.value = f
+      g.gain.setValueAtTime(0, t)
+      g.gain.linearRampToValueAtTime(0.35, t + 0.02)
+      g.gain.exponentialRampToValueAtTime(0.001, t + d)
+      o.start(t); o.stop(t + d + 0.05)
     }
-    play(880,  ctx.currentTime,        0.2)
-    play(880,  ctx.currentTime + 0.3,  0.2)
-    play(1100, ctx.currentTime + 0.6,  0.35)
-    play(1320, ctx.currentTime + 1.05, 0.5)
+    beep(880,  ctx.currentTime,       0.2)
+    beep(880,  ctx.currentTime + 0.3, 0.2)
+    beep(1100, ctx.currentTime + 0.6, 0.35)
+    beep(1320, ctx.currentTime + 1.0, 0.5)
   } catch {}
 }
 
-function _webNotification(title, body) {
+function _webNotify(title, body) {
   if (!('Notification' in window)) return
-  if ((window.Notification?.permission ?? 'not_supported') !== 'granted') return
-  const opts = { body, icon: '/logo.svg', badge: '/logo.svg', tag: 'habitlife-alarm', renotify: true }
+  if (window.Notification.permission !== 'granted') return
+  const opts = { body, icon: '/logo.svg', tag: 'hl-alarm', renotify: true }
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready
-      .then(reg => reg.showNotification(title, opts))
+      .then(r => r.showNotification(title, opts))
       .catch(() => { try { new window.Notification(title, opts) } catch {} })
   } else {
     try { new window.Notification(title, opts) } catch {}
   }
 }
 
-// ── Main hook ───────────────────────────────────────────────────────────────
-export function useNativeAlarm() {
+// ── Solicita permissões (chama no mount do AppShell) ───────────────────────
+export async function requestAlarmPermissions() {
+  const { Capacitor, LN } = await loadCap()
 
-  /**
-   * scheduleAlarm — agenda alarme para um horário específico
-   * @param {string} title
-   * @param {string} body
-   * @param {Date|number} date  — quando disparar (Date ou ms timestamp)
-   * @param {string} sound      — nome do arquivo (sem path) ex: 'alarm.mp3'
-   */
-  const scheduleAlarm = async (title, body, date = Date.now(), sound = 'alarm.mp3') => {
-    const { Capacitor, LocalNotifications } = await loadCapacitor()
+  if (Capacitor.isNativePlatform() && LN) {
+    try {
+      // Notificações gerais
+      const p = await LN.requestPermissions()
+      if (p.display !== 'granted') return false
 
-    if (Capacitor.isNativePlatform() && LocalNotifications) {
-      // ── Nativo: Android / iOS ────────────────────────────────────────────
-      try {
-        const perm = await LocalNotifications.requestPermissions()
-        if (perm.display !== 'granted') {
-          // Fall back to web if permission denied
-          _webNotification(title, body)
-          _webAlarm()
-          return
-        }
-        await LocalNotifications.schedule({
-          notifications: [{
-            id:           Math.floor(Math.random() * 1_000_000),
-            title,
-            body,
-            schedule:     { at: new Date(date) },
-            sound,                  // arquivo deve estar em android/app/src/main/res/raw/
-            smallIcon:    'ic_stat_icon_config_sample',
-            iconColor:    '#7c3aed',
-            actionTypeId: '',
-            extra:        null,
-          }]
-        })
-      } catch (err) {
-        console.error('Erro ao agendar alarme nativo:', err)
-        _webNotification(title, body)
-        _webAlarm()
+      // Android 12+: permissão para alarmes exatos
+      // Isso redireciona o usuário para as configurações do app se necessário
+      if (typeof LN.checkExactNotificationSetting === 'function') {
+        await LN.checkExactNotificationSetting()
       }
-    } else {
-      // ── Web fallback ─────────────────────────────────────────────────────
-      const delay = Math.max(0, new Date(date).getTime() - Date.now())
-      if (delay === 0) {
-        _webNotification(title, body)
-        _webAlarm()
-      } else {
-        setTimeout(() => {
-          _webNotification(title, body)
-          _webAlarm()
-        }, delay)
-      }
+      return true
+    } catch (e) {
+      console.warn('requestAlarmPermissions error:', e)
+      return false
     }
   }
 
-  /**
-   * fireNow — dispara alarme imediatamente (usado no fim do timer, teste, etc.)
-   */
-  const fireNow = (title, body) => scheduleAlarm(title, body, Date.now())
-
-  /**
-   * cancelAll — cancela todos os alarmes agendados (nativo)
-   */
-  const cancelAll = async () => {
-    const { Capacitor, LocalNotifications } = await loadCapacitor()
-    if (Capacitor.isNativePlatform() && LocalNotifications) {
-      try {
-        const pending = await LocalNotifications.getPending()
-        if (pending.notifications?.length) {
-          await LocalNotifications.cancel({ notifications: pending.notifications })
-        }
-      } catch {}
-    }
+  // Web
+  if (typeof window !== 'undefined' && 'Notification' in window &&
+      window.Notification.permission === 'default') {
+    try {
+      const r = await window.Notification.requestPermission()
+      return r === 'granted'
+    } catch { return false }
   }
-
-  return { scheduleAlarm, fireNow, cancelAll }
+  return false
 }
 
-// ── Standalone function (usável fora de componentes React) ─────────────────
+// ── Agenda alarme para um horário específico ───────────────────────────────
+export async function scheduleAlarm(title, body, fireAt = new Date(), sound = 'alarm') {
+  const { Capacitor, LN } = await loadCap()
+  const when = new Date(fireAt)
+
+  if (Capacitor.isNativePlatform() && LN) {
+    try {
+      const perm = await LN.requestPermissions()
+      if (perm.display !== 'granted') {
+        // sem permissão, faz fallback de som local se o app estiver aberto
+        _webSound(); _webVibrate()
+        return
+      }
+
+      await LN.schedule({
+        notifications: [{
+          id:           uniqueId(),
+          title,
+          body,
+          schedule: {
+            at:            when,
+            allowWhileIdle: true,   // dispara mesmo com Doze mode ativo
+          },
+          sound,                    // corresponde a android/app/src/main/res/raw/alarm.mp3
+          channelId:    'habitlife_alarm',   // canal IMPORTANCE_HIGH + USAGE_ALARM
+          iconColor:    '#7c3aed',
+          smallIcon:    'ic_stat_icon_config_sample',
+          actionTypeId: '',
+          extra:        null,
+          ongoing:      false,
+          autoCancel:   true,
+        }]
+      })
+    } catch (err) {
+      console.error('scheduleAlarm native error:', err)
+      _webSound(); _webVibrate()
+    }
+  } else {
+    // Web: agenda via setTimeout se for futuro, ou dispara imediatamente
+    const delay = Math.max(0, when.getTime() - Date.now())
+    setTimeout(() => {
+      _webNotify(title, body)
+      _webSound()
+      _webVibrate()
+    }, delay)
+  }
+}
+
+// ── Dispara imediatamente (timer concluído, teste, etc.) ───────────────────
+export async function fireAlarmNow(title, body) {
+  const { Capacitor, LN } = await loadCap()
+
+  if (Capacitor.isNativePlatform() && LN) {
+    try {
+      await LN.schedule({
+        notifications: [{
+          id:           uniqueId(),
+          title,
+          body,
+          schedule:     { at: new Date(Date.now() + 300), allowWhileIdle: true },
+          sound:        'alarm',
+          channelId:    'habitlife_alarm',
+          iconColor:    '#7c3aed',
+          smallIcon:    'ic_stat_icon_config_sample',
+          actionTypeId: '',
+          extra:        null,
+          autoCancel:   true,
+        }]
+      })
+    } catch {
+      _webSound(); _webVibrate()
+    }
+  } else {
+    _webNotify(title, body)
+    _webSound()
+    _webVibrate()
+  }
+}
+
+// ── Cancela todos os alarmes pendentes ─────────────────────────────────────
+export async function cancelAllAlarms() {
+  const { Capacitor, LN } = await loadCap()
+  if (!Capacitor.isNativePlatform() || !LN) return
+  try {
+    const { notifications } = await LN.getPending()
+    if (notifications?.length) await LN.cancel({ notifications })
+  } catch {}
+}
+
+// ── Hook React ─────────────────────────────────────────────────────────────
+export function useNativeAlarm() {
+  return {
+    scheduleAlarm,
+    fireNow: fireAlarmNow,
+    cancelAll: cancelAllAlarms,
+  }
+}
+
+// ── Agenda notificações de lembrete de tarefas ─────────────────────────────
 export async function scheduleTaskNotifications(task) {
   if (!task.reminders?.length && (!task.alert || task.alert === 'none')) return
 
-  const { Capacitor, LocalNotifications } = await loadCapacitor()
-  const isNative = Capacitor.isNativePlatform() && !!LocalNotifications
+  const { Capacitor, LN } = await loadCap()
+  const isNative = Capacitor.isNativePlatform() && !!LN
 
-  const fireAt_list = []
-
-  // Reminders (time-offset based)
-  const OFFSETS = { '15min': 15*60000, '30min': 30*60000, '1h': 3600000, '2h': 7200000, '4h': 14400000, '1d': 86400000 }
+  // Lembretes com offset de horário
   if (task.time && task.time !== '—' && task.reminders?.length) {
+    const OFFSETS = { '15min': 900000, '30min': 1800000, '1h': 3600000, '2h': 7200000, '4h': 14400000, '1d': 86400000 }
     const [hh, mm] = task.time.split(':').map(Number)
     const base = new Date(task.date + 'T' + String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0') + ':00')
-    task.reminders.forEach(r => {
+
+    for (const r of task.reminders) {
       const fireAt = new Date(base.getTime() - (OFFSETS[r] || 0))
-      if (fireAt > new Date()) fireAt_list.push({ fireAt, label: r })
-    })
+      if (fireAt > new Date()) {
+        await scheduleAlarm(`⏰ ${task.name}`, `Lembrete: em ${r}`, fireAt)
+      }
+    }
   }
 
-  // Direct time alarm (when task has a time set and alert !== 'none')
+  // Alarme direto no horário da tarefa
   if (task.time && task.time !== '—' && task.alert && task.alert !== 'none') {
     const [hh, mm] = task.time.split(':').map(Number)
     const fireAt = new Date(task.date + 'T' + String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0') + ':00')
-    if (fireAt > new Date()) fireAt_list.push({ fireAt, label: null })
-  }
-
-  if (fireAt_list.length === 0) return
-
-  if (isNative) {
-    try {
-      const perm = await LocalNotifications.requestPermissions()
-      if (perm.display !== 'granted') return
-      await LocalNotifications.schedule({
-        notifications: fireAt_list.map(({ fireAt, label }) => ({
-          id:       Math.floor(Math.random() * 1_000_000),
-          title:    `⏰ ${task.name}`,
-          body:     label ? `Lembrete: tarefa em ${label}` : 'Hora da sua tarefa!',
-          schedule: { at: fireAt },
-          sound:    'alarm.mp3',
-          iconColor:'#7c3aed',
-          actionTypeId: '',
-          extra:    null,
-        }))
-      })
-    } catch (err) { console.error('scheduleTaskNotifications error:', err) }
-  } else {
-    // Web: schedule via setTimeout (works while tab is open)
-    fireAt_list.forEach(({ fireAt, label }) => {
-      const delay = fireAt.getTime() - Date.now()
-      if (delay > 0 && delay < 24 * 3600 * 1000) {
-        setTimeout(() => {
-          _webNotification(`⏰ ${task.name}`, label ? `Lembrete: tarefa em ${label}` : 'Hora da sua tarefa!')
-          if (task.alert === 'alarm' || task.alert === 'both') _webAlarm()
-        }, delay)
-      }
-    })
+    if (fireAt > new Date()) {
+      const isAlarm = task.alert === 'alarm' || task.alert === 'both'
+      await scheduleAlarm(
+        `⏰ ${task.name}`,
+        'Hora da sua tarefa!',
+        fireAt,
+        isAlarm ? 'alarm' : undefined
+      )
+    }
   }
 }
